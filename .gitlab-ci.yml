@@ -1,0 +1,32 @@
+include:
+  - project: $CI_INCLUDE_PATH
+    ref: $CI_INCLUDE_REF
+    file:
+      - "/variables-subchart.gitlab-ci.yml"
+
+  - project: $CI_INCLUDE_PATH
+    ref: $CI_INCLUDE_REF
+    file:
+      - "/test-subchart.gitlab-ci.yml"
+
+  - project: $CI_INCLUDE_PATH
+    ref: $CI_INCLUDE_REF
+    file:
+      - "/publish-subchart.gitlab-ci.yml"
+
+  - project: $CI_INCLUDE_PATH
+    ref: $CI_INCLUDE_REF
+    file:
+      - "/sign-subchart.gitlab-ci.yml"
+
+stages:
+  - lint
+  - tests
+
+  - validate-tag
+  - package
+  - publish
+
+  - sign
+  - metadata
+  - verify

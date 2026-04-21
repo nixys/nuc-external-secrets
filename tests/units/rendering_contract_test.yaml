@@ -1,0 +1,109 @@
+suite: rendering contract
+templates:
+  - templates/clustersecretstore.yaml
+  - templates/externalsecret.yaml
+  - templates/password.yaml
+release:
+  name: unit-test
+  namespace: unit-namespace
+
+tests:
+  - it: renders no ExternalSecret documents by default
+    template: templates/externalsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders cluster-scoped resources without namespace and with merged metadata
+    values:
+      - values/rendering_contract.values.yaml
+    template: templates/clustersecretstore.yaml
+    documentSelector:
+      path: metadata.name
+      value: merged-store
+    asserts:
+      - isKind:
+          of: ClusterSecretStore
+      - equal:
+          path: apiVersion
+          value: example.net/v1alpha1
+      - notExists:
+          path: metadata.namespace
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: unit-test
+      - equal:
+          path: metadata.labels.platform
+          value: eso
+      - equal:
+          path: metadata.labels.component
+          value: store
+      - equal:
+          path: metadata.annotations.team
+          value: platform
+      - equal:
+          path: metadata.annotations.note
+          value: shared-store
+      - equal:
+          path: spec.provider.webhook.url
+          value: https://provider.example.net/api
+
+  - it: renders namespaced resources with merged metadata and default namespace
+    values:
+      - values/rendering_contract.values.yaml
+    template: templates/externalsecret.yaml
+    documentSelector:
+      path: metadata.name
+      value: merged-secret
+    asserts:
+      - isKind:
+          of: ExternalSecret
+      - equal:
+          path: apiVersion
+          value: example.net/v1alpha2
+      - equal:
+          path: metadata.namespace
+          value: unit-namespace
+      - equal:
+          path: metadata.labels.platform
+          value: eso
+      - equal:
+          path: metadata.labels.component
+          value: secret
+      - equal:
+          path: metadata.annotations.note
+          value: app-secret
+      - equal:
+          path: spec.secretStoreRef.name
+          value: merged-store
+      - equal:
+          path: spec.data[0].remoteRef.property
+          value: username
+
+  - it: skips null map entries
+    values:
+      - values/null_resources.values.yaml
+    template: templates/externalsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders generator resources with merged metadata
+    values:
+      - values/rendering_contract.values.yaml
+    template: templates/password.yaml
+    documentSelector:
+      path: metadata.name
+      value: generated-password
+    asserts:
+      - isKind:
+          of: Password
+      - equal:
+          path: apiVersion
+          value: example.net/v1alpha3
+      - equal:
+          path: metadata.namespace
+          value: unit-namespace
+      - equal:
+          path: spec.length
+          value: 24

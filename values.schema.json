@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "nuc-external-secrets values",
+  "description": "Schema for nuc-external-secrets Helm chart values.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Enable rendering for this chart."
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "Override the generated base name."
+    },
+    "releasePrefix": {
+      "type": "string",
+      "description": "Optional prefix used for generated names."
+    },
+    "commonLabels": {
+      "$ref": "#/definitions/stringMap",
+      "description": "Labels merged into every rendered resource."
+    },
+    "commonAnnotations": {
+      "$ref": "#/definitions/stringMap",
+      "description": "Annotations merged into every rendered resource."
+    },
+    "global": {
+      "$ref": "#/definitions/freeFormObject",
+      "description": "Global values available to tpl-rendered strings."
+    },
+    "apiVersions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "clusterExternalSecret": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "clusterPushSecret": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "clusterSecretStore": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "externalSecret": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "pushSecret": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "secretStore": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "acrAccessToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "cloudsmithAccessToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "clusterGenerator": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "ecrAuthorizationToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "fake": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "gcrAccessToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "generatorState": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "githubAccessToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "grafana": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "mfa": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "password": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "quayAccessToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "sshKey": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "stsSessionToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "uuid": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "vaultDynamicSecret": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "webhook": {
+          "$ref": "#/definitions/nonEmptyString"
+        }
+      }
+    },
+    "clusterExternalSecrets": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ClusterExternalSecret resources keyed by resource name."
+    },
+    "clusterPushSecrets": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ClusterPushSecret resources keyed by resource name."
+    },
+    "clusterSecretStores": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ClusterSecretStore resources keyed by resource name."
+    },
+    "externalSecrets": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ExternalSecret resources keyed by resource name."
+    },
+    "pushSecrets": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of PushSecret resources keyed by resource name."
+    },
+    "secretStores": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of SecretStore resources keyed by resource name."
+    },
+    "acrAccessTokens": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ACRAccessToken resources keyed by resource name."
+    },
+    "cloudsmithAccessTokens": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of CloudsmithAccessToken resources keyed by resource name."
+    },
+    "clusterGenerators": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ClusterGenerator resources keyed by resource name."
+    },
+    "ecrAuthorizationTokens": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ECRAuthorizationToken resources keyed by resource name."
+    },
+    "fakes": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of Fake resources keyed by resource name."
+    },
+    "gcrAccessTokens": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of GCRAccessToken resources keyed by resource name."
+    },
+    "generatorStates": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of GeneratorState resources keyed by resource name."
+    },
+    "githubAccessTokens": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of GithubAccessToken resources keyed by resource name."
+    },
+    "grafanas": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of Grafana resources keyed by resource name."
+    },
+    "mfas": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of MFA resources keyed by resource name."
+    },
+    "passwords": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of Password resources keyed by resource name."
+    },
+    "quayAccessTokens": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of QuayAccessToken resources keyed by resource name."
+    },
+    "sshKeys": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of SSHKey resources keyed by resource name."
+    },
+    "stsSessionTokens": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of STSSessionToken resources keyed by resource name."
+    },
+    "uuids": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of UUID resources keyed by resource name."
+    },
+    "vaultDynamicSecrets": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of VaultDynamicSecret resources keyed by resource name."
+    },
+    "webhooks": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of Webhook resources keyed by resource name."
+    }
+  },
+  "definitions": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringMap": {
+      "type": "object",
+      "default": {},
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "freeFormObject": {
+      "type": "object",
+      "default": {},
+      "additionalProperties": true
+    },
+    "resourceItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "namespace": {
+          "type": "string"
+        },
+        "labels": {
+          "$ref": "#/definitions/stringMap"
+        },
+        "annotations": {
+          "$ref": "#/definitions/stringMap"
+        },
+        "apiVersion": {
+          "type": "string"
+        },
+        "spec": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "status": {
+          "$ref": "#/definitions/freeFormObject"
+        }
+      }
+    },
+    "nullableResourceItem": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/resourceItem"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "resourceMap": {
+      "type": "object",
+      "default": {},
+      "propertyNames": {
+        "$ref": "#/definitions/nonEmptyString"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/nullableResourceItem"
+      }
+    }
+  }
+}

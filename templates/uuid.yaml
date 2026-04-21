@@ -1,0 +1,7 @@
+{{ include "nuc-external-secrets.renderGenericResources" (dict
+  "root" $
+  "collection" ($.Values.uuids | default dict)
+  "kind" "UUID"
+  "defaultApiVersion" $.Values.apiVersions.uuid
+  "namespaced" true
+) }}

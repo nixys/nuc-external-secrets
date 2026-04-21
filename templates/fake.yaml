@@ -1,0 +1,7 @@
+{{ include "nuc-external-secrets.renderGenericResources" (dict
+  "root" $
+  "collection" ($.Values.fakes | default dict)
+  "kind" "Fake"
+  "defaultApiVersion" $.Values.apiVersions.fake
+  "namespaced" true
+) }}

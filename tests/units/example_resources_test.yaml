@@ -1,0 +1,106 @@
+suite: example resources
+templates:
+  - templates/clusterexternalsecret.yaml
+  - templates/clusterpushsecret.yaml
+  - templates/clustersecretstore.yaml
+  - templates/externalsecret.yaml
+  - templates/pushsecret.yaml
+  - templates/secretstore.yaml
+  - templates/acraccesstoken.yaml
+  - templates/cloudsmithaccesstoken.yaml
+  - templates/clustergenerator.yaml
+  - templates/ecrauthorizationtoken.yaml
+  - templates/fake.yaml
+  - templates/gcraccesstoken.yaml
+  - templates/generatorstate.yaml
+  - templates/githubaccesstoken.yaml
+  - templates/grafana.yaml
+  - templates/mfa.yaml
+  - templates/password.yaml
+  - templates/quayaccesstoken.yaml
+  - templates/sshkey.yaml
+  - templates/stssessiontoken.yaml
+  - templates/uuid.yaml
+  - templates/vaultdynamicsecret.yaml
+  - templates/webhook.yaml
+release:
+  name: unit-test
+  namespace: unit-namespace
+
+tests:
+  - it: renders one document for the ExternalSecret example
+    values:
+      - ../../values.yaml.example
+    template: templates/externalsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 1
+
+  - it: renders one document for the ClusterSecretStore example
+    values:
+      - ../../values.yaml.example
+    template: templates/clustersecretstore.yaml
+    asserts:
+      - hasDocuments:
+          count: 1
+
+  - it: renders one document for the Password generator example
+    values:
+      - ../../values.yaml.example
+    template: templates/password.yaml
+    asserts:
+      - hasDocuments:
+          count: 1
+
+  - it: renders the expected example manifests
+    values:
+      - ../../values.yaml.example
+    template: templates/externalsecret.yaml
+    documentSelector:
+      path: metadata.name
+      value: app-config
+    asserts:
+      - isKind:
+          of: ExternalSecret
+      - equal:
+          path: metadata.namespace
+          value: app
+      - equal:
+          path: spec.secretStoreRef.name
+          value: app-store
+      - equal:
+          path: spec.target.template.metadata.labels["synced-by"]
+          value: eso
+
+  - it: renders a cluster-scoped resource without metadata.namespace
+    values:
+      - ../../values.yaml.example
+    template: templates/clustersecretstore.yaml
+    documentSelector:
+      path: metadata.name
+      value: tenant-store
+    asserts:
+      - isKind:
+          of: ClusterSecretStore
+      - notExists:
+          path: metadata.namespace
+      - equal:
+          path: spec.provider.webhook.result.jsonPath
+          value: $.data
+
+  - it: renders generator resources from keyed maps
+    values:
+      - ../../values.yaml.example
+    template: templates/password.yaml
+    documentSelector:
+      path: metadata.name
+      value: db-password
+    asserts:
+      - isKind:
+          of: Password
+      - equal:
+          path: spec.length
+          value: 40
+      - equal:
+          path: metadata.labels.component
+          value: generator

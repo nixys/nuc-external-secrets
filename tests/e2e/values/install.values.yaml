@@ -1,0 +1,41 @@
+commonLabels:
+  test-suite: e2e
+
+commonAnnotations:
+  test-suite: e2e
+
+secretStores:
+  e2e-store:
+    spec:
+      provider:
+        fake:
+          data:
+            - key: username
+              value: e2e-user
+            - key: password
+              value: e2e-password
+
+externalSecrets:
+  e2e-app-config:
+    spec:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: e2e-store
+        kind: SecretStore
+      target:
+        name: e2e-app-config
+        creationPolicy: Owner
+      data:
+        - secretKey: username
+          remoteRef:
+            key: username
+        - secretKey: password
+          remoteRef:
+            key: password
+
+passwords:
+  e2e-password:
+    spec:
+      length: 24
+      digits: 4
+      symbols: 2

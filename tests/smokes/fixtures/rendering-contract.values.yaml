@@ -1,0 +1,55 @@
+commonLabels:
+  platform: eso
+  tier: control
+
+commonAnnotations:
+  team: platform
+
+apiVersions:
+  clusterSecretStore: example.net/v1alpha1
+  externalSecret: example.net/v1alpha2
+  password: example.net/v1alpha3
+
+clusterSecretStores:
+  merged-store:
+    labels:
+      component: store
+    annotations:
+      note: shared-store
+    spec:
+      provider:
+        webhook:
+          url: https://provider.example.net/api
+          result:
+            jsonPath: $.payload
+
+externalSecrets:
+  merged-secret:
+    labels:
+      component: secret
+    annotations:
+      note: app-secret
+    spec:
+      refreshInterval: 10m
+      secretStoreRef:
+        name: merged-store
+        kind: ClusterSecretStore
+      target:
+        name: merged-secret
+        creationPolicy: Owner
+      data:
+        - secretKey: username
+          remoteRef:
+            key: apps/merged
+            property: username
+
+passwords:
+  generated-password:
+    labels:
+      component: generator
+    annotations:
+      note: generated
+    spec:
+      length: 24
+      digits: 4
+      symbols: 2

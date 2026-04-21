@@ -1,0 +1,7 @@
+{{ include "nuc-external-secrets.renderGenericResources" (dict
+  "root" $
+  "collection" ($.Values.webhooks | default dict)
+  "kind" "Webhook"
+  "defaultApiVersion" $.Values.apiVersions.webhook
+  "namespaced" true
+) }}

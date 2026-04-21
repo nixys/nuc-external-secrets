@@ -1,0 +1,96 @@
+# NUC External Secrets
+
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/nuc-external-secrets)](https://artifacthub.io/packages/search?repo=nuc-external-secrets)
+
+Helm chart for rendering External Secrets Operator resources and generator CRs from declarative values.
+
+The chart does not install External Secrets Operator CRDs or the operator itself. It renders the custom resources defined in [`config/crds/bases`](https://github.com/external-secrets/external-secrets/tree/main/config/crds/bases) and expects those CRDs to be available in the target cluster.
+
+## Quick Start
+
+Install the chart:
+
+```bash
+helm install nuc-external-secrets oci://registry.nixys.ru/nuc/nuc-external-secrets   --namespace external-secrets   --create-namespace
+```
+
+Install the local README generator hook:
+
+```bash
+pre-commit install
+pre-commit install-hooks
+```
+
+## Supported Resources
+
+- `ClusterExternalSecret`
+- `ClusterPushSecret`
+- `ClusterSecretStore`
+- `ExternalSecret`
+- `PushSecret`
+- `SecretStore`
+- `ACRAccessToken`
+- `CloudsmithAccessToken`
+- `ClusterGenerator`
+- `ECRAuthorizationToken`
+- `Fake`
+- `GCRAccessToken`
+- `GeneratorState`
+- `GithubAccessToken`
+- `Grafana`
+- `MFA`
+- `Password`
+- `QuayAccessToken`
+- `SSHKey`
+- `STSSessionToken`
+- `UUID`
+- `VaultDynamicSecret`
+- `Webhook`
+
+## Values Model
+
+The chart exposes one keyed map per supported resource kind. Each map entry becomes one rendered custom resource where the map key is used as `metadata.name`.
+
+Every resource map uses the same generic contract:
+
+- `namespace` for namespaced resources (ignored for cluster-scoped resources)
+- `labels`
+- `annotations`
+- `apiVersion`
+- `spec`
+- `status`
+
+Global controls:
+
+- `nameOverride`
+- `releasePrefix`
+- `commonLabels`
+- `commonAnnotations`
+- `global`
+- `apiVersions.*`
+
+The values contract is validated by [values.schema.json](values.schema.json).
+
+## Helm Values
+
+This section is generated from [values.yaml](values.yaml) by `helm-docs`. Edit [values.yaml](values.yaml) comments or [docs/README.md.gotmpl](docs/README.md.gotmpl), then run `pre-commit run helm-docs --all-files` or `make docs`.
+
+{{ template "chart.valuesTable" . }}
+
+## Included Values Files
+
+- [values.yaml](values.yaml): minimal defaults that render no resources.
+- [values.yaml.example](values.yaml.example): example values covering every supported resource kind.
+
+## Testing
+
+Representative local commands:
+
+```bash
+helm lint . -f values.yaml.example
+helm template {chart_name} . -f values.yaml.example
+helm unittest -f 'tests/units/*_test.yaml' .
+sh tests/units/backward_compatibility_test.sh
+python3 tests/smokes/run/smoke.py
+make test-smoke-fast
+```

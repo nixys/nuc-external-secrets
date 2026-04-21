@@ -1,0 +1,7 @@
+{{ include "nuc-external-secrets.renderGenericResources" (dict
+  "root" $
+  "collection" ($.Values.ecrAuthorizationTokens | default dict)
+  "kind" "ECRAuthorizationToken"
+  "defaultApiVersion" $.Values.apiVersions.ecrAuthorizationToken
+  "namespaced" true
+) }}
