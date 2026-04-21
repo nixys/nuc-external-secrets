@@ -118,8 +118,8 @@ clusterPushSecrets:
         data:
         - match:
             secretKey: token
-          remoteRef:
-            remoteKey: providers/demo
+            remoteRef:
+              remoteKey: providers/demo
     # -- Optional resource status rendered as-is.
     status:
       failedNamespaces: []
@@ -205,8 +205,8 @@ pushSecrets:
       data:
       - match:
           secretKey: token
-        remoteRef:
-          remoteKey: providers/demo
+          remoteRef:
+            remoteKey: providers/demo
     # -- Optional resource status rendered as-is.
     status:
       conditions:
@@ -295,12 +295,15 @@ clusterGenerators:
     apiVersion: generators.external-secrets.io/v1alpha1
     # -- Resource spec rendered as-is.
     spec:
+      kind: Password
       generator:
         passwordSpec:
           length: 32
           digits: 8
           symbols: 4
           symbolCharacters: '!@#$%'
+          allowRepeat: true
+          noUpper: false
     # -- Optional resource status rendered as-is.
     status: {}
 
@@ -381,10 +384,21 @@ generatorStates:
     apiVersion: generators.external-secrets.io/v1alpha1
     # -- Resource spec rendered as-is.
     spec:
-      generatorRef:
+      resource:
         apiVersion: generators.external-secrets.io/v1alpha1
         kind: Password
-        name: documentation-placeholder
+        metadata:
+          name: documentation-placeholder
+          namespace: documentation-placeholder
+        spec:
+          length: 32
+          digits: 8
+          symbols: 4
+          symbolCharacters: '!@#$%'
+          allowRepeat: true
+          noUpper: false
+      state:
+        password: documentation-placeholder
     # -- Optional resource status rendered as-is.
     status:
       conditions:
@@ -409,8 +423,9 @@ githubAccessTokens:
       url: https://api.github.com
       auth:
         privateKey:
-          name: documentation-placeholder
-          key: privateKey
+          secretRef:
+            name: documentation-placeholder
+            key: privateKey
     # -- Optional resource status rendered as-is.
     status: {}
 
@@ -428,11 +443,13 @@ grafanas:
     # -- Resource spec rendered as-is.
     spec:
       url: https://grafana.example
-      orgId: 1
       auth:
         token:
           name: documentation-placeholder
           key: token
+      serviceAccount:
+        name: documentation-placeholder
+        role: Viewer
     # -- Optional resource status rendered as-is.
     status: {}
 
@@ -449,10 +466,12 @@ mfas:
     apiVersion: generators.external-secrets.io/v1alpha1
     # -- Resource spec rendered as-is.
     spec:
-      issuer: documentation-placeholder
-      accountName: documentation-placeholder
-      digits: 6
-      period: 30
+      secret:
+        name: documentation-placeholder
+        key: seed
+      length: 6
+      timePeriod: 30
+      algorithm: SHA1
     # -- Optional resource status rendered as-is.
     status: {}
 
@@ -473,6 +492,8 @@ passwords:
       digits: 8
       symbols: 4
       symbolCharacters: '!@#$%'
+      allowRepeat: true
+      noUpper: false
     # -- Optional resource status rendered as-is.
     status: {}
 
@@ -490,11 +511,9 @@ quayAccessTokens:
     # -- Resource spec rendered as-is.
     spec:
       url: https://quay.io
-      repository: documentation-placeholder
-      auth:
-        robotAccount:
-          name: documentation-placeholder
-          key: token
+      robotAccount: documentation-placeholder
+      serviceAccountRef:
+        name: documentation-placeholder
     # -- Optional resource status rendered as-is.
     status: {}
 
@@ -511,8 +530,8 @@ sshKeys:
     apiVersion: generators.external-secrets.io/v1alpha1
     # -- Resource spec rendered as-is.
     spec:
-      algorithm: rsa
-      length: 4096
+      keyType: rsa
+      keySize: 4096
       comment: documentation-placeholder
     # -- Optional resource status rendered as-is.
     status: {}

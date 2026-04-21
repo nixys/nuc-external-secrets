@@ -87,8 +87,8 @@ clusterPushSecrets:
         data:
         - match:
             secretKey: config.json
-          remoteRef:
-            remoteKey: backups/app-config
+            remoteRef:
+              remoteKey: backups/app-config
 
 clusterSecretStores:
   tenant-store:
@@ -160,8 +160,8 @@ pushSecrets:
       data:
       - match:
           secretKey: config.yml
-        remoteRef:
-          remoteKey: backups/app-config
+          remoteRef:
+            remoteKey: backups/app-config
 
 secretStores:
   app-store:
@@ -218,12 +218,15 @@ clusterGenerators:
     annotations:
       note: password
     spec:
+      kind: Password
       generator:
         passwordSpec:
           length: 40
           digits: 10
           symbols: 6
           symbolCharacters: '!@#$%^&*'
+          allowRepeat: true
+          noUpper: false
 
 ecrAuthorizationTokens:
   ecr-token:
@@ -279,10 +282,21 @@ generatorStates:
     annotations:
       note: state
     spec:
-      generatorRef:
+      resource:
         apiVersion: generators.external-secrets.io/v1alpha1
         kind: Password
-        name: db-password
+        metadata:
+          name: db-password
+          namespace: app
+        spec:
+          length: 40
+          digits: 8
+          symbols: 6
+          symbolCharacters: '!@#$%^&*'
+          allowRepeat: true
+          noUpper: false
+      state:
+        password: seeded-password
     status:
       conditions:
       - type: Ready
@@ -303,8 +317,9 @@ githubAccessTokens:
       - nixys/nuc-external-secrets
       auth:
         privateKey:
-          name: github-app
-          key: privateKey
+          secretRef:
+            name: github-app
+            key: privateKey
 
 grafanas:
   grafana-token:
@@ -315,11 +330,13 @@ grafanas:
       note: grafana
     spec:
       url: https://grafana.example.internal
-      orgId: 1
       auth:
         token:
           name: grafana-admin
           key: token
+      serviceAccount:
+        name: eso-grafana-reader
+        role: Viewer
 
 mfas:
   totp-seed:
@@ -329,10 +346,12 @@ mfas:
     annotations:
       note: mfa
     spec:
-      issuer: Nixys
-      accountName: deploy-bot
-      digits: 6
-      period: 30
+      secret:
+        name: mfa-seed
+        key: seed
+      length: 6
+      timePeriod: 30
+      algorithm: SHA1
 
 passwords:
   db-password:
@@ -346,6 +365,8 @@ passwords:
       digits: 8
       symbols: 6
       symbolCharacters: '!@#$%^&*'
+      allowRepeat: true
+      noUpper: false
 
 quayAccessTokens:
   quay-token:
@@ -356,11 +377,9 @@ quayAccessTokens:
       note: quay
     spec:
       url: https://quay.io
-      repository: nixys/demo
-      auth:
-        robotAccount:
-          name: quay-robot
-          key: token
+      robotAccount: nixys+eso
+      serviceAccountRef:
+        name: default
 
 sshKeys:
   deploy-key:
@@ -370,7 +389,7 @@ sshKeys:
     annotations:
       note: ssh
     spec:
-      algorithm: ed25519
+      keyType: ed25519
       comment: deploy@nixys.io
 
 stsSessionTokens:
