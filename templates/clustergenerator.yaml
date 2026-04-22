@@ -1,7 +1,0 @@
-{{ include "nuc-external-secrets.renderGenericResources" (dict
-  "root" $
-  "collection" ($.Values.clusterGenerators | default dict)
-  "kind" "ClusterGenerator"
-  "defaultApiVersion" $.Values.apiVersions.clusterGenerator
-  "namespaced" false
-) }}

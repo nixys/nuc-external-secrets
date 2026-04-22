@@ -1,40 +1,60 @@
-# Example values for all supported External Secrets Operator resources in this chart.
-# Render with:
-#   helm template nuc-external-secrets . -f values.yaml.example
+# A realistic values.yaml shape for nuc-external-secrets.
+# Exercise all six supported kinds and show how `generic:` removes repetition.
 
 enabled: true
 
-nameOverride: external-secrets
+releasePrefix: external-secrets
 
 commonLabels:
-  platform: eso
+  env: prod
+  owner: team-platform
 commonAnnotations:
-  team: platform
+  argocd.argoproj.io/sync-wave: "-1"
 
-apiVersions:
-  clusterExternalSecret: external-secrets.io/v1
-  clusterPushSecret: external-secrets.io/v1alpha1
-  clusterSecretStore: external-secrets.io/v1
-  externalSecret: external-secrets.io/v1
-  pushSecret: external-secrets.io/v1alpha1
-  secretStore: external-secrets.io/v1
-  acrAccessToken: generators.external-secrets.io/v1alpha1
-  cloudsmithAccessToken: generators.external-secrets.io/v1alpha1
-  clusterGenerator: generators.external-secrets.io/v1alpha1
-  ecrAuthorizationToken: generators.external-secrets.io/v1alpha1
-  fake: generators.external-secrets.io/v1alpha1
-  gcrAccessToken: generators.external-secrets.io/v1alpha1
-  generatorState: generators.external-secrets.io/v1alpha1
-  githubAccessToken: generators.external-secrets.io/v1alpha1
-  grafana: generators.external-secrets.io/v1alpha1
-  mfa: generators.external-secrets.io/v1alpha1
-  password: generators.external-secrets.io/v1alpha1
-  quayAccessToken: generators.external-secrets.io/v1alpha1
-  sshKey: generators.external-secrets.io/v1alpha1
-  stsSessionToken: generators.external-secrets.io/v1alpha1
-  uuid: generators.external-secrets.io/v1alpha1
-  vaultDynamicSecret: generators.external-secrets.io/v1alpha1
-  webhook: generators.external-secrets.io/v1alpha1
+generic:
+  externalSecret:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: external-secrets-tenant-store
+      kind: ClusterSecretStore
+    target:
+      creationPolicy: Owner
+      deletionPolicy: Retain
+
+  pushSecret:
+    deletionPolicy: Delete
+    refreshInterval: 1h
+    secretStoreRefs:
+      - name: external-secrets-tenant-store
+        kind: ClusterSecretStore
+
+externalSecrets:
+  app-config:
+    namespace: app
+    labels:
+      component: external-secret
+    annotations:
+      note: example
+    spec:
+      target:
+        name: app-config
+        template:
+          metadata:
+            labels:
+              synced-by: eso
+          data:
+            config.yml: |-
+              user={{ .username }}
+              password={{ .password }}
+      data:
+        - secretKey: username
+          remoteRef:
+            key: apps/app-config
+            property: username
+        - secretKey: password
+          remoteRef:
+            key: apps/app-config
+            property: password
 
 clusterExternalSecrets:
   shared-app-secrets:
@@ -45,50 +65,44 @@ clusterExternalSecrets:
     spec:
       externalSecretName: app-config
       namespaceSelectors:
-      - matchLabels:
-          eso.nixys.io/sync: enabled
+        - matchLabels:
+            eso.nixys.io/sync: enabled
       externalSecretSpec:
         refreshInterval: 30m
         secretStoreRef:
-          name: tenant-store
+          name: external-secrets-tenant-store
           kind: ClusterSecretStore
         target:
           name: app-config
           creationPolicy: Owner
         data:
-        - secretKey: username
-          remoteRef:
-            key: apps/config
-            property: username
-        - secretKey: password
-          remoteRef:
-            key: apps/config
-            property: password
+          - secretKey: username
+            remoteRef:
+              key: apps/config
+              property: username
+          - secretKey: password
+            remoteRef:
+              key: apps/config
+              property: password
 
-clusterPushSecrets:
-  shared-push-secret:
+secretStores:
+  app-store:
+    namespace: app
     labels:
-      component: cluster-push-secret
+      component: secret-store
     annotations:
       note: example
     spec:
-      namespaceSelectors:
-      - matchLabels:
-          eso.nixys.io/push: enabled
-      pushSecretSpec:
-        refreshInterval: 1h
-        updatePolicy: Replace
-        secretStoreRefs:
-        - name: tenant-store
-          kind: ClusterSecretStore
-        selector:
-          secret:
-            name: app-config
-        data:
-        - match:
-            secretKey: config.json
-            remoteRef:
-              remoteKey: backups/app-config
+      provider:
+        fake:
+          data:
+            - key: username
+              value: demo
+            - key: password
+              value: s3cr3t
+      retrySettings:
+        maxRetries: 4
+        retryInterval: 5s
 
 clusterSecretStores:
   tenant-store:
@@ -108,39 +122,6 @@ clusterSecretStores:
         maxRetries: 5
         retryInterval: 15s
 
-externalSecrets:
-  app-config:
-    namespace: app
-    labels:
-      component: external-secret
-    annotations:
-      note: example
-    spec:
-      refreshInterval: 15m
-      secretStoreRef:
-        name: app-store
-        kind: SecretStore
-      target:
-        name: app-config
-        creationPolicy: Owner
-        template:
-          metadata:
-            labels:
-              synced-by: eso
-          data:
-            config.yml: 'user={{ .username }}
-    
-              password={{ .password }}'
-      data:
-      - secretKey: username
-        remoteRef:
-          key: apps/app-config
-          property: username
-      - secretKey: password
-        remoteRef:
-          key: apps/app-config
-          property: password
-
 pushSecrets:
   app-push:
     namespace: app
@@ -149,302 +130,35 @@ pushSecrets:
     annotations:
       note: example
     spec:
-      refreshInterval: 20m
-      updatePolicy: Replace
-      secretStoreRefs:
-      - name: app-store
-        kind: SecretStore
       selector:
         secret:
           name: app-config
       data:
-      - match:
-          secretKey: config.yml
-          remoteRef:
-            remoteKey: backups/app-config
+        - match:
+            secretKey: config.yml
+            remoteRef:
+              remoteKey: backups/app-config
 
-secretStores:
-  app-store:
-    namespace: app
+clusterPushSecrets:
+  shared-push-secret:
     labels:
-      component: secret-store
+      component: cluster-push-secret
     annotations:
       note: example
     spec:
-      provider:
-        fake:
-          data:
-          - key: username
-            value: demo
-          - key: password
-            value: s3cr3t
-      retrySettings:
-        maxRetries: 4
-        retryInterval: 5s
-
-acrAccessTokens:
-  acr-token:
-    namespace: app
-    labels:
-      component: generator
-    annotations:
-      note: acr
-    spec:
-      auth:
-        managedIdentity:
-          identityId: uami-app
-      registry: demo.azurecr.io
-      scope: repository:app:pull
-
-cloudsmithAccessTokens:
-  cloudsmith-token:
-    namespace: app
-    labels:
-      component: generator
-    annotations:
-      note: cloudsmith
-    spec:
-      orgSlug: nixys
-      serviceSlug: build-bot
-      serviceAccountRef:
-        name: default
-        audiences:
-        - cloudsmith
-
-clusterGenerators:
-  shared-password-generator:
-    labels:
-      component: cluster-generator
-    annotations:
-      note: password
-    spec:
-      kind: Password
-      generator:
-        passwordSpec:
-          length: 40
-          digits: 10
-          symbols: 6
-          symbolCharacters: '!@#$%^&*'
-          allowRepeat: true
-          noUpper: false
-
-ecrAuthorizationTokens:
-  ecr-token:
-    namespace: jobs
-    labels:
-      component: generator
-    annotations:
-      note: ecr
-    spec:
-      region: eu-central-1
-      scope: private
-      auth:
-        jwt:
-          serviceAccountRef:
-            name: default
-            audiences:
-            - sts.amazonaws.com
-
-fakes:
-  static-seed:
-    namespace: app
-    labels:
-      component: generator
-    annotations:
-      note: fake
-    spec:
-      controller: default
-      data:
-        username: demo
-        password: super-secret
-
-gcrAccessTokens:
-  gcr-token:
-    namespace: jobs
-    labels:
-      component: generator
-    annotations:
-      note: gcr
-    spec:
-      projectID: demo-project
-      auth:
-        workloadIdentity:
-          clusterName: nks-prod
-          clusterLocation: eu
-          serviceAccountRef:
-            name: default
-
-generatorStates:
-  password-state:
-    namespace: app
-    labels:
-      component: generator-state
-    annotations:
-      note: state
-    spec:
-      resource:
-        apiVersion: generators.external-secrets.io/v1alpha1
-        kind: Password
-        metadata:
-          name: db-password
-          namespace: app
-        spec:
-          length: 40
-          digits: 8
-          symbols: 6
-          symbolCharacters: '!@#$%^&*'
-          allowRepeat: true
-          noUpper: false
-      state:
-        password: seeded-password
-    status:
-      conditions:
-      - type: Ready
-        status: 'True'
-        reason: Seeded
-
-githubAccessTokens:
-  github-token:
-    namespace: platform
-    labels:
-      component: generator
-    annotations:
-      note: github
-    spec:
-      appID: '12345'
-      installID: '67890'
-      repositories:
-      - nixys/nuc-external-secrets
-      auth:
-        privateKey:
-          secretRef:
-            name: github-app
-            key: privateKey
-
-grafanas:
-  grafana-token:
-    namespace: platform
-    labels:
-      component: generator
-    annotations:
-      note: grafana
-    spec:
-      url: https://grafana.example.internal
-      auth:
-        token:
-          name: grafana-admin
-          key: token
-      serviceAccount:
-        name: eso-grafana-reader
-        role: Viewer
-
-mfas:
-  totp-seed:
-    namespace: platform
-    labels:
-      component: generator
-    annotations:
-      note: mfa
-    spec:
-      secret:
-        name: mfa-seed
-        key: seed
-      length: 6
-      timePeriod: 30
-      algorithm: SHA1
-
-passwords:
-  db-password:
-    namespace: app
-    labels:
-      component: generator
-    annotations:
-      note: password
-    spec:
-      length: 40
-      digits: 8
-      symbols: 6
-      symbolCharacters: '!@#$%^&*'
-      allowRepeat: true
-      noUpper: false
-
-quayAccessTokens:
-  quay-token:
-    namespace: platform
-    labels:
-      component: generator
-    annotations:
-      note: quay
-    spec:
-      url: https://quay.io
-      robotAccount: nixys+eso
-      serviceAccountRef:
-        name: default
-
-sshKeys:
-  deploy-key:
-    namespace: platform
-    labels:
-      component: generator
-    annotations:
-      note: ssh
-    spec:
-      keyType: ed25519
-      comment: deploy@nixys.io
-
-stsSessionTokens:
-  sts-token:
-    namespace: jobs
-    labels:
-      component: generator
-    annotations:
-      note: sts
-    spec:
-      region: eu-central-1
-      role: arn:aws:iam::111111111111:role/eso-demo
-      auth:
-        jwt:
-          serviceAccountRef:
-            name: default
-            audiences:
-            - sts.amazonaws.com
-
-uuids:
-  request-id:
-    namespace: app
-    labels:
-      component: generator
-    annotations:
-      note: uuid
-    spec:
-      version: 4
-
-vaultDynamicSecrets:
-  vault-generator:
-    namespace: app
-    labels:
-      component: generator
-    annotations:
-      note: vault
-    spec:
-      path: database/creds/app
-      provider:
-        server: https://vault.example.internal:8200
-        auth:
-          tokenSecretRef:
-            name: vault-token
-            key: token
-
-webhooks:
-  webhook-generator:
-    namespace: platform
-    labels:
-      component: generator
-    annotations:
-      note: webhook
-    spec:
-      url: https://generator.example.internal/api/token
-      method: POST
-      body: '{"ttl":"15m"}'
-      result:
-        jsonPath: $.data.token
+      namespaceSelectors:
+        - matchLabels:
+            eso.nixys.io/push: enabled
+      pushSecretSpec:
+        refreshInterval: 1h
+        secretStoreRefs:
+          - name: external-secrets-tenant-store
+            kind: ClusterSecretStore
+        selector:
+          secret:
+            name: app-config
+        data:
+          - match:
+              secretKey: config.json
+              remoteRef:
+                remoteKey: backups/app-config

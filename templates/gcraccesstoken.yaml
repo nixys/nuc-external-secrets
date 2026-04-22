@@ -1,7 +1,0 @@
-{{ include "nuc-external-secrets.renderGenericResources" (dict
-  "root" $
-  "collection" ($.Values.gcrAccessTokens | default dict)
-  "kind" "GCRAccessToken"
-  "defaultApiVersion" $.Values.apiVersions.gcrAccessToken
-  "namespaced" true
-) }}

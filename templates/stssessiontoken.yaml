@@ -1,7 +1,0 @@
-{{ include "nuc-external-secrets.renderGenericResources" (dict
-  "root" $
-  "collection" ($.Values.stsSessionTokens | default dict)
-  "kind" "STSSessionToken"
-  "defaultApiVersion" $.Values.apiVersions.stsSessionToken
-  "namespaced" true
-) }}

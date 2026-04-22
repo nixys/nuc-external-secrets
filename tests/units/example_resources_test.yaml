@@ -1,34 +1,17 @@
 suite: example resources
-templates:
-  - templates/clusterexternalsecret.yaml
-  - templates/clusterpushsecret.yaml
-  - templates/clustersecretstore.yaml
-  - templates/externalsecret.yaml
-  - templates/pushsecret.yaml
-  - templates/secretstore.yaml
-  - templates/acraccesstoken.yaml
-  - templates/cloudsmithaccesstoken.yaml
-  - templates/clustergenerator.yaml
-  - templates/ecrauthorizationtoken.yaml
-  - templates/fake.yaml
-  - templates/gcraccesstoken.yaml
-  - templates/generatorstate.yaml
-  - templates/githubaccesstoken.yaml
-  - templates/grafana.yaml
-  - templates/mfa.yaml
-  - templates/password.yaml
-  - templates/quayaccesstoken.yaml
-  - templates/sshkey.yaml
-  - templates/stssessiontoken.yaml
-  - templates/uuid.yaml
-  - templates/vaultdynamicsecret.yaml
-  - templates/webhook.yaml
 release:
   name: unit-test
   namespace: unit-namespace
+templates:
+  - templates/externalsecret.yaml
+  - templates/clusterexternalsecret.yaml
+  - templates/secretstore.yaml
+  - templates/clustersecretstore.yaml
+  - templates/pushsecret.yaml
+  - templates/clusterpushsecret.yaml
 
 tests:
-  - it: renders one document for the ExternalSecret example
+  - it: renders one document for each namespaced example resource
     values:
       - ../../values.yaml.example
     template: templates/externalsecret.yaml
@@ -36,7 +19,7 @@ tests:
       - hasDocuments:
           count: 1
 
-  - it: renders one document for the ClusterSecretStore example
+  - it: renders one document for each cluster-scoped example resource
     values:
       - ../../values.yaml.example
     template: templates/clustersecretstore.yaml
@@ -44,21 +27,13 @@ tests:
       - hasDocuments:
           count: 1
 
-  - it: renders one document for the Password generator example
-    values:
-      - ../../values.yaml.example
-    template: templates/password.yaml
-    asserts:
-      - hasDocuments:
-          count: 1
-
-  - it: renders the expected example manifests
+  - it: renders the example ExternalSecret with prefixed names
     values:
       - ../../values.yaml.example
     template: templates/externalsecret.yaml
     documentSelector:
       path: metadata.name
-      value: app-config
+      value: external-secrets-app-config
     asserts:
       - isKind:
           of: ExternalSecret
@@ -67,10 +42,26 @@ tests:
           value: app
       - equal:
           path: spec.secretStoreRef.name
-          value: app-store
+          value: external-secrets-tenant-store
       - equal:
           path: spec.target.template.metadata.labels["synced-by"]
           value: eso
+
+  - it: renders the example ClusterExternalSecret with prefixed names
+    values:
+      - ../../values.yaml.example
+    template: templates/clusterexternalsecret.yaml
+    documentSelector:
+      path: metadata.name
+      value: external-secrets-shared-app-secrets
+    asserts:
+      - isKind:
+          of: ClusterExternalSecret
+      - notExists:
+          path: metadata.namespace
+      - equal:
+          path: spec.externalSecretSpec.secretStoreRef.name
+          value: external-secrets-tenant-store
 
   - it: renders a cluster-scoped resource without metadata.namespace
     values:
@@ -78,7 +69,7 @@ tests:
     template: templates/clustersecretstore.yaml
     documentSelector:
       path: metadata.name
-      value: tenant-store
+      value: external-secrets-tenant-store
     asserts:
       - isKind:
           of: ClusterSecretStore
@@ -88,19 +79,38 @@ tests:
           path: spec.provider.webhook.result.jsonPath
           value: $.data
 
-  - it: renders generator resources from keyed maps
+  - it: renders PushSecret with inherited generic defaults
     values:
       - ../../values.yaml.example
-    template: templates/password.yaml
+    template: templates/pushsecret.yaml
     documentSelector:
       path: metadata.name
-      value: db-password
+      value: external-secrets-app-push
     asserts:
       - isKind:
-          of: Password
+          of: PushSecret
       - equal:
-          path: spec.length
-          value: 40
+          path: metadata.namespace
+          value: app
       - equal:
-          path: metadata.labels.component
-          value: generator
+          path: spec.deletionPolicy
+          value: Delete
+      - equal:
+          path: spec.secretStoreRefs[0].name
+          value: external-secrets-tenant-store
+
+  - it: renders ClusterPushSecret from the example values
+    values:
+      - ../../values.yaml.example
+    template: templates/clusterpushsecret.yaml
+    documentSelector:
+      path: metadata.name
+      value: external-secrets-shared-push-secret
+    asserts:
+      - isKind:
+          of: ClusterPushSecret
+      - notExists:
+          path: metadata.namespace
+      - equal:
+          path: spec.pushSecretSpec.secretStoreRefs[0].name
+          value: external-secrets-tenant-store

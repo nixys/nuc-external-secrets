@@ -1,7 +1,0 @@
-{{ include "nuc-external-secrets.renderGenericResources" (dict
-  "root" $
-  "collection" ($.Values.sshKeys | default dict)
-  "kind" "SSHKey"
-  "defaultApiVersion" $.Values.apiVersions.sshKey
-  "namespaced" true
-) }}

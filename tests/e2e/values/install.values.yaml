@@ -1,3 +1,5 @@
+releasePrefix: e2e
+
 commonLabels:
   test-suite: e2e
 
@@ -5,7 +7,7 @@ commonAnnotations:
   test-suite: e2e
 
 secretStores:
-  e2e-store:
+  store:
     spec:
       provider:
         fake:
@@ -16,7 +18,7 @@ secretStores:
               value: e2e-password
 
 externalSecrets:
-  e2e-app-config:
+  app-config:
     spec:
       refreshInterval: 1h
       secretStoreRef:
@@ -32,10 +34,3 @@ externalSecrets:
         - secretKey: password
           remoteRef:
             key: password
-
-passwords:
-  e2e-password:
-    spec:
-      length: 24
-      digits: 4
-      symbols: 2

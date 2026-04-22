@@ -1,55 +1,109 @@
 commonLabels:
-  platform: eso
-  tier: control
-
+  env: prod
+  owner: platform
 commonAnnotations:
-  team: platform
+  sync-wave: "-1"
 
-apiVersions:
-  clusterSecretStore: example.net/v1alpha1
-  externalSecret: example.net/v1alpha2
-  password: example.net/v1alpha3
-
-clusterSecretStores:
-  merged-store:
-    labels:
-      component: store
-    annotations:
-      note: shared-store
-    spec:
-      provider:
-        webhook:
-          url: https://provider.example.net/api
-          result:
-            jsonPath: $.payload
+generic:
+  externalSecret:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: vault
+      kind: ClusterSecretStore
+    target:
+      creationPolicy: Owner
+  pushSecret:
+    deletionPolicy: Delete
+    refreshInterval: 1h
+    secretStoreRefs:
+      - name: vault
+        kind: ClusterSecretStore
 
 externalSecrets:
-  merged-secret:
-    labels:
-      component: secret
-    annotations:
-      note: app-secret
+  app-one:
     spec:
-      refreshInterval: 10m
-      secretStoreRef:
-        name: merged-store
-        kind: ClusterSecretStore
-      target:
-        name: merged-secret
-        creationPolicy: Owner
       data:
-        - secretKey: username
+        - secretKey: DB_PASS
           remoteRef:
-            key: apps/merged
-            property: username
-
-passwords:
-  generated-password:
+            key: kv/prod/app-one
+            property: password
+  app-two:
+    namespace: apps
     labels:
-      component: generator
+      tier: backend
     annotations:
-      note: generated
+      rotated-by: eso
     spec:
-      length: 24
-      digits: 4
-      symbols: 2
+      refreshInterval: 30m
+      dataFrom:
+        - extract:
+            key: kv/prod/app-two
+
+clusterExternalSecrets:
+  broadcast:
+    spec:
+      externalSecretName: broadcast
+      namespaceSelectors:
+        - matchLabels:
+            pull-secrets: "true"
+      externalSecretSpec:
+        secretStoreRef:
+          name: vault
+          kind: ClusterSecretStore
+        target:
+          name: broadcast
+        data:
+          - secretKey: payload
+            remoteRef:
+              key: kv/global/broadcast
+              property: payload
+
+secretStores:
+  team-a:
+    spec:
+      provider:
+        vault:
+          server: https://vault.example.com
+          path: secret
+          version: v2
+          auth:
+            kubernetes:
+              mountPath: kubernetes
+              role: team-a
+
+clusterSecretStores:
+  vault:
+    spec:
+      provider:
+        vault:
+          server: https://vault.example.com
+          path: secret
+          version: v2
+          auth:
+            kubernetes:
+              mountPath: kubernetes
+              role: eso-default
+
+pushSecrets:
+  sync-creds:
+    spec:
+      selector:
+        secret:
+          name: local-creds
+      data:
+        - match:
+            secretKey: password
+            remoteRef:
+              remoteKey: kv/pushed/creds
+
+clusterPushSecrets:
+  broadcast-ca:
+    spec:
+      selector:
+        secret:
+          name: ca-cert
+      data:
+        - match:
+            secretKey: ca.crt
+            remoteRef:
+              remoteKey: kv/shared/ca

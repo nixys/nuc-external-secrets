@@ -8,7 +8,7 @@ ROOT_DIR="$(git rev-parse --show-toplevel)"
 SCRIPT_DIR="${ROOT_DIR}/tests/e2e"
 CLUSTER_CREATED=false
 CLUSTER_NAME="${CLUSTER_NAME:-$(mktemp -u "nuc-external-secrets-e2e-XXXXXXXXXX" | tr "[:upper:]" "[:lower:]")}"
-K8S_VERSION="${K8S_VERSION:-v1.35.0}"
+K8S_VERSION="${K8S_VERSION:-v1.31.0}"
 ESO_VERSION="${ESO_VERSION:-0.20.4}"
 ESO_NAMESPACE="${ESO_NAMESPACE:-external-secrets}"
 ESO_RELEASE_NAME="${ESO_RELEASE_NAME:-external-secrets}"
@@ -73,8 +73,8 @@ cleanup() {
 
 dump_cluster_state() {
   log_warn "Dumping External Secrets resources from ${CLUSTER_NAME}"
-  kubectl get crd externalsecrets.external-secrets.io secretstores.external-secrets.io passwords.generators.external-secrets.io || true
-  kubectl get externalsecrets.external-secrets.io,secretstores.external-secrets.io,passwords.generators.external-secrets.io -A || true
+  kubectl get crd externalsecrets.external-secrets.io secretstores.external-secrets.io || true
+  kubectl get externalsecrets.external-secrets.io,secretstores.external-secrets.io -A || true
   kubectl get pods -A || true
 }
 
@@ -114,7 +114,6 @@ install_eso() {
 
   kubectl wait --for=condition=Established --timeout=120s crd/externalsecrets.external-secrets.io
   kubectl wait --for=condition=Established --timeout=120s crd/secretstores.external-secrets.io
-  kubectl wait --for=condition=Established --timeout=120s crd/passwords.generators.external-secrets.io
   echo
 }
 
@@ -149,7 +148,6 @@ verify_release_resources() {
   log_info "Verifying installed External Secrets resources"
   kubectl -n "${E2E_NAMESPACE}" get secretstore e2e-store
   kubectl -n "${E2E_NAMESPACE}" get externalsecret e2e-app-config
-  kubectl -n "${E2E_NAMESPACE}" get password e2e-password
   echo
 }
 

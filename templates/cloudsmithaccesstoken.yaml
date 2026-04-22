@@ -1,7 +1,0 @@
-{{ include "nuc-external-secrets.renderGenericResources" (dict
-  "root" $
-  "collection" ($.Values.cloudsmithAccessTokens | default dict)
-  "kind" "CloudsmithAccessToken"
-  "defaultApiVersion" $.Values.apiVersions.cloudsmithAccessToken
-  "namespaced" true
-) }}

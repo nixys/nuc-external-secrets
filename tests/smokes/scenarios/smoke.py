@@ -101,82 +101,94 @@ def check_rendering_contract(context: SmokeContext) -> None:
     )
 
     documents = render.load_documents(output_path)
-    render.assert_doc_count(documents, 3)
+    render.assert_doc_count(documents, 7)
+    render.assert_kinds(
+        documents,
+        {
+            "ExternalSecret",
+            "ClusterExternalSecret",
+            "SecretStore",
+            "ClusterSecretStore",
+            "PushSecret",
+            "ClusterPushSecret",
+        },
+    )
 
-    store = render.select_document(documents, kind="ClusterSecretStore", name="merged-store")
-    render.assert_path(store, "apiVersion", "example.net/v1alpha1")
+    store = render.select_document(
+        documents,
+        kind="ClusterSecretStore",
+        name=f"{context.release_name}-vault",
+    )
+    render.assert_path(store, "apiVersion", "external-secrets.io/v1")
     render.assert_path_missing(store, "metadata.namespace")
-    render.assert_path(store, "metadata.labels.platform", "eso")
-    render.assert_path(store, "metadata.labels.component", "store")
-    render.assert_path(store, "metadata.annotations.note", "shared-store")
-    render.assert_path(store, "spec.provider.webhook.result.jsonPath", "$.payload")
+    render.assert_path(store, "spec.provider.vault.server", "https://vault.example.com")
 
-    secret = render.select_document(documents, kind="ExternalSecret", name="merged-secret")
-    render.assert_path(secret, "apiVersion", "example.net/v1alpha2")
+    secret = render.select_document(
+        documents,
+        kind="ExternalSecret",
+        name=f"{context.release_name}-simple-app",
+    )
     render.assert_path(secret, "metadata.namespace", context.namespace)
-    render.assert_path(secret, "metadata.labels.platform", "eso")
-    render.assert_path(secret, "metadata.labels.component", "secret")
-    render.assert_path(secret, "spec.secretStoreRef.name", "merged-store")
-    render.assert_path(secret, "spec.data[0].remoteRef.key", "apps/merged")
+    render.assert_path(secret, "metadata.labels.env", "prod")
+    render.assert_path(secret, 'metadata.annotations["test/generator"]', "smoke")
+    render.assert_path(secret, "spec.refreshInterval", "1h")
+    render.assert_path(secret, "spec.secretStoreRef.name", "vault")
+    render.assert_path(secret, "spec.data[0].remoteRef.key", "kv/prod/simple-app")
 
-    password = render.select_document(documents, kind="Password", name="generated-password")
-    render.assert_path(password, "apiVersion", "example.net/v1alpha3")
-    render.assert_path(password, "metadata.namespace", context.namespace)
-    render.assert_path(password, "spec.length", 24)
-    render.assert_path(password, "spec.symbols", 2)
+    push_secret = render.select_document(
+        documents,
+        kind="PushSecret",
+        name=f"{context.release_name}-sync-creds",
+    )
+    render.assert_path(push_secret, "metadata.namespace", context.namespace)
+    render.assert_path(push_secret, "spec.deletionPolicy", "Delete")
+    render.assert_path(push_secret, "spec.secretStoreRefs[0].name", "vault")
 
 
 def check_example_render(context: SmokeContext) -> None:
     _, documents = render_example(context, "example-render.yaml")
-    render.assert_doc_count(documents, 23)
+    render.assert_doc_count(documents, 6)
     render.assert_kinds(
         documents,
         {
-            "ClusterExternalSecret",
-            "ClusterPushSecret",
-            "ClusterSecretStore",
             "ExternalSecret",
-            "PushSecret",
+            "ClusterExternalSecret",
             "SecretStore",
-            "ACRAccessToken",
-            "CloudsmithAccessToken",
-            "ClusterGenerator",
-            "ECRAuthorizationToken",
-            "Fake",
-            "GCRAccessToken",
-            "GeneratorState",
-            "GithubAccessToken",
-            "Grafana",
-            "MFA",
-            "Password",
-            "QuayAccessToken",
-            "SSHKey",
-            "STSSessionToken",
-            "UUID",
-            "VaultDynamicSecret",
-            "Webhook",
+            "ClusterSecretStore",
+            "PushSecret",
+            "ClusterPushSecret",
         },
     )
 
-    secret = render.select_document(documents, kind="ExternalSecret", name="app-config")
+    secret = render.select_document(
+        documents,
+        kind="ExternalSecret",
+        name="external-secrets-app-config",
+    )
     render.assert_path(secret, "metadata.namespace", "app")
-    render.assert_path(secret, "spec.secretStoreRef.name", "app-store")
-    render.assert_path(secret, "spec.target.template.metadata.labels[synced-by]", "eso")
+    render.assert_path(secret, "spec.secretStoreRef.name", "external-secrets-tenant-store")
+    render.assert_path(secret, 'spec.target.template.metadata.labels["synced-by"]', "eso")
 
-    store = render.select_document(documents, kind="ClusterSecretStore", name="tenant-store")
+    store = render.select_document(
+        documents,
+        kind="ClusterSecretStore",
+        name="external-secrets-tenant-store",
+    )
     render.assert_path_missing(store, "metadata.namespace")
     render.assert_path(store, "spec.provider.webhook.url", "https://eso-provider.example/api/secrets")
 
-    password = render.select_document(documents, kind="Password", name="db-password")
-    render.assert_path(password, "spec.length", 40)
-
-    generator_state = render.select_document(documents, kind="GeneratorState", name="password-state")
-    render.assert_path(generator_state, "status.conditions[0].reason", "Seeded")
+    push_secret = render.select_document(
+        documents,
+        kind="PushSecret",
+        name="external-secrets-app-push",
+    )
+    render.assert_path(push_secret, "spec.deletionPolicy", "Delete")
+    render.assert_path(push_secret, "spec.secretStoreRefs[0].name", "external-secrets-tenant-store")
 
 
 def check_example_kubeconform(context: SmokeContext) -> None:
     output_path, documents = render_example(context, "example-kubeconform.yaml")
-    render.assert_doc_count(documents, 23)
+    render.assert_doc_count(documents, 6)
 
     payload = kubeconform.validate(
         manifest_path=output_path,

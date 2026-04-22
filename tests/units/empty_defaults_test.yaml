@@ -1,0 +1,41 @@
+suite: empty defaults render nothing
+release:
+  name: test
+  namespace: apps
+templates:
+  - templates/externalsecret.yaml
+  - templates/clusterexternalsecret.yaml
+  - templates/secretstore.yaml
+  - templates/clustersecretstore.yaml
+  - templates/pushsecret.yaml
+  - templates/clusterpushsecret.yaml
+
+tests:
+  - it: default values.yaml (placeholders only) renders no resources
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: setting a map to null renders no resources for that kind
+    set:
+      externalSecrets: null
+    template: templates/externalsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: item with enabled false is skipped
+    set:
+      externalSecrets:
+        disabled-item:
+          enabled: false
+          spec:
+            data:
+              - secretKey: X
+                remoteRef:
+                  key: kv/x
+                  property: x
+    template: templates/externalsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 0

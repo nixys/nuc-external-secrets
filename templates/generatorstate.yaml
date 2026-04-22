@@ -1,7 +1,0 @@
-{{ include "nuc-external-secrets.renderGenericResources" (dict
-  "root" $
-  "collection" ($.Values.generatorStates | default dict)
-  "kind" "GeneratorState"
-  "defaultApiVersion" $.Values.apiVersions.generatorState
-  "namespaced" true
-) }}

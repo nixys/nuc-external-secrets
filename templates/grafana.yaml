@@ -1,7 +1,0 @@
-{{ include "nuc-external-secrets.renderGenericResources" (dict
-  "root" $
-  "collection" ($.Values.grafanas | default dict)
-  "kind" "Grafana"
-  "defaultApiVersion" $.Values.apiVersions.grafana
-  "namespaced" true
-) }}

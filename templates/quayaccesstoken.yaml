@@ -1,7 +1,0 @@
-{{ include "nuc-external-secrets.renderGenericResources" (dict
-  "root" $
-  "collection" ($.Values.quayAccessTokens | default dict)
-  "kind" "QuayAccessToken"
-  "defaultApiVersion" $.Values.apiVersions.quayAccessToken
-  "namespaced" true
-) }}
