@@ -1,0 +1,441 @@
+suite: generators
+release:
+  name: test
+  namespace: apps
+templates:
+  - templates/acraccesstoken.yaml
+  - templates/cloudsmithaccesstoken.yaml
+  - templates/clustergenerator.yaml
+  - templates/ecrauthorizationtoken.yaml
+  - templates/fake.yaml
+  - templates/gcraccesstoken.yaml
+  - templates/generatorstate.yaml
+  - templates/githubaccesstoken.yaml
+  - templates/grafana.yaml
+  - templates/mfa.yaml
+  - templates/password.yaml
+  - templates/quayaccesstoken.yaml
+  - templates/sshkey.yaml
+  - templates/stssessiontoken.yaml
+  - templates/uuid.yaml
+  - templates/vaultdynamicsecret.yaml
+  - templates/webhook.yaml
+
+tests:
+
+  # --- disabled / null ---
+
+  - it: generator with enabled false is skipped
+    template: templates/password.yaml
+    set:
+      passwords:
+        disabled-pass:
+          enabled: false
+          spec:
+            length: 32
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: setting a generator map to null renders no documents
+    template: templates/password.yaml
+    set:
+      passwords: null
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  # --- generic defaults ---
+
+  - it: Password spec.length from generic.password is applied when item has no spec
+    template: templates/password.yaml
+    values:
+      - values/generators.values.yaml
+    set:
+      passwords.generic-pass.spec: {}
+    documentSelector:
+      path: metadata.name
+      value: test-generic-pass
+    asserts:
+      - equal:
+          path: spec.length
+          value: 24
+
+  - it: Password item spec wins over generic.password default
+    template: templates/password.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-password
+    asserts:
+      - equal:
+          path: spec.length
+          value: 32
+
+  # --- ACRAccessToken ---
+
+  - it: ACRAccessToken renders correct kind apiVersion and namespace
+    template: templates/acraccesstoken.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-acr
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: ACRAccessToken
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.environmentType
+          value: PublicCloud
+
+  # --- CloudsmithAccessToken ---
+
+  - it: CloudsmithAccessToken renders correct kind apiVersion and namespace
+    template: templates/cloudsmithaccesstoken.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-cloudsmith
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: CloudsmithAccessToken
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.apiKeySecretRef.name
+          value: cloudsmith-api-key
+
+  # --- ClusterGenerator ---
+
+  - it: ClusterGenerator renders correct kind apiVersion and has no namespace
+    template: templates/clustergenerator.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-cluster-gen
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: ClusterGenerator
+      - notExists:
+          path: metadata.namespace
+      - equal:
+          path: spec.kind
+          value: Password
+
+  # --- ECRAuthorizationToken ---
+
+  - it: ECRAuthorizationToken renders correct kind apiVersion and namespace
+    template: templates/ecrauthorizationtoken.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-ecr
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: ECRAuthorizationToken
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.region
+          value: us-east-1
+
+  # --- Fake ---
+
+  - it: Fake renders correct kind apiVersion and namespace
+    template: templates/fake.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-fake
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: Fake
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.data[0].key
+          value: username
+
+  # --- GCRAccessToken ---
+
+  - it: GCRAccessToken renders correct kind apiVersion and namespace
+    template: templates/gcraccesstoken.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-gcr
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: GCRAccessToken
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.projectID
+          value: my-gcp-project
+
+  # --- GeneratorState ---
+
+  - it: GeneratorState renders correct kind apiVersion and namespace
+    template: templates/generatorstate.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-state
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: GeneratorState
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.generatorRef.kind
+          value: Password
+
+  # --- GithubAccessToken ---
+
+  - it: GithubAccessToken renders correct kind apiVersion and namespace
+    template: templates/githubaccesstoken.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-github
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: GithubAccessToken
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.appID
+          value: 12345
+
+  # --- Grafana ---
+
+  - it: Grafana renders correct kind apiVersion and namespace
+    template: templates/grafana.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-grafana
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: Grafana
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.url
+          value: https://grafana.example.com
+
+  # --- MFA ---
+
+  - it: MFA renders correct kind apiVersion and namespace
+    template: templates/mfa.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-mfa
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: MFA
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.secretRef.name
+          value: totp-secret
+
+  # --- Password ---
+
+  - it: Password renders correct kind apiVersion and namespace
+    template: templates/password.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-password
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: Password
+      - equal:
+          path: metadata.namespace
+          value: apps
+
+  # --- QuayAccessToken ---
+
+  - it: QuayAccessToken renders correct kind apiVersion and namespace
+    template: templates/quayaccesstoken.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-quay
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: QuayAccessToken
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.robotAccountRef.name
+          value: quay-robot
+
+  # --- SSHKey ---
+
+  - it: SSHKey renders correct kind apiVersion and namespace
+    template: templates/sshkey.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-ssh
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: SSHKey
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.keySize
+          value: 4096
+
+  # --- STSSessionToken ---
+
+  - it: STSSessionToken renders correct kind apiVersion and namespace
+    template: templates/stssessiontoken.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-sts
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: STSSessionToken
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.region
+          value: us-east-1
+
+  # --- UUID ---
+
+  - it: UUID renders correct kind apiVersion and namespace
+    template: templates/uuid.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-uuid
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: UUID
+      - equal:
+          path: metadata.namespace
+          value: apps
+
+  # --- VaultDynamicSecret ---
+
+  - it: VaultDynamicSecret renders correct kind apiVersion and namespace
+    template: templates/vaultdynamicsecret.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-vault-dyn
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: VaultDynamicSecret
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.path
+          value: pki/issue/my-role
+
+  # --- Webhook ---
+
+  - it: Webhook renders correct kind apiVersion and namespace
+    template: templates/webhook.yaml
+    values:
+      - values/generators.values.yaml
+    documentSelector:
+      path: metadata.name
+      value: test-my-webhook
+    asserts:
+      - equal:
+          path: apiVersion
+          value: generators.external-secrets.io/v1alpha1
+      - isKind:
+          of: Webhook
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.url
+          value: https://provider.example.com/generate

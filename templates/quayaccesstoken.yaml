@@ -1,0 +1,7 @@
+{{- range $name := keys ($.Values.quayAccessTokens | default dict) | sortAlpha }}
+{{- $item := get $.Values.quayAccessTokens $name -}}
+{{- if and (ne $name "__helm_docs_example__") (include "nuc-external-secrets.isActiveItem" $item) }}
+---
+{{ include "nuc-external-secrets.renderNamespacedResource" (dict "root" $ "name" $name "item" $item "kind" "QuayAccessToken" "apiVersionKey" "quayAccessToken") }}
+{{- end }}
+{{- end }}

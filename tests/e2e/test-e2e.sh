@@ -73,8 +73,18 @@ cleanup() {
 
 dump_cluster_state() {
   log_warn "Dumping External Secrets resources from ${CLUSTER_NAME}"
-  kubectl get crd externalsecrets.external-secrets.io secretstores.external-secrets.io || true
-  kubectl get externalsecrets.external-secrets.io,secretstores.external-secrets.io -A || true
+  kubectl get crd \
+    externalsecrets.external-secrets.io \
+    secretstores.external-secrets.io \
+    fakes.generators.external-secrets.io \
+    passwords.generators.external-secrets.io \
+    uuids.generators.external-secrets.io \
+    clustergenerators.generators.external-secrets.io || true
+  kubectl get \
+    externalsecrets.external-secrets.io,secretstores.external-secrets.io,\
+fakes.generators.external-secrets.io,passwords.generators.external-secrets.io,\
+uuids.generators.external-secrets.io -A || true
+  kubectl get clustergenerators.generators.external-secrets.io || true
   kubectl get pods -A || true
 }
 
@@ -114,6 +124,10 @@ install_eso() {
 
   kubectl wait --for=condition=Established --timeout=120s crd/externalsecrets.external-secrets.io
   kubectl wait --for=condition=Established --timeout=120s crd/secretstores.external-secrets.io
+  kubectl wait --for=condition=Established --timeout=120s crd/fakes.generators.external-secrets.io
+  kubectl wait --for=condition=Established --timeout=120s crd/passwords.generators.external-secrets.io
+  kubectl wait --for=condition=Established --timeout=120s crd/uuids.generators.external-secrets.io
+  kubectl wait --for=condition=Established --timeout=120s crd/clustergenerators.generators.external-secrets.io
   echo
 }
 
@@ -148,6 +162,10 @@ verify_release_resources() {
   log_info "Verifying installed External Secrets resources"
   kubectl -n "${E2E_NAMESPACE}" get secretstore e2e-store
   kubectl -n "${E2E_NAMESPACE}" get externalsecret e2e-app-config
+  kubectl -n "${E2E_NAMESPACE}" get fake e2e-static-data
+  kubectl -n "${E2E_NAMESPACE}" get password e2e-app-password
+  kubectl -n "${E2E_NAMESPACE}" get uuid e2e-request-id
+  kubectl get clustergenerator e2e-shared-password
   echo
 }
 

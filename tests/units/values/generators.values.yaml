@@ -1,0 +1,105 @@
+generic:
+  password:
+    length: 24
+
+acrAccessTokens:
+  my-acr:
+    spec:
+      environmentType: PublicCloud
+      tenantId: "tenant-id-123"
+
+cloudsmithAccessTokens:
+  my-cloudsmith:
+    spec:
+      apiKeySecretRef:
+        name: cloudsmith-api-key
+        key: api-key
+
+clusterGenerators:
+  my-cluster-gen:
+    spec:
+      kind: Password
+      generator:
+        apiVersion: generators.external-secrets.io/v1alpha1
+
+ecrAuthorizationTokens:
+  my-ecr:
+    spec:
+      region: us-east-1
+
+fakes:
+  my-fake:
+    spec:
+      data:
+        - key: username
+          value: demo-user
+
+gcrAccessTokens:
+  my-gcr:
+    spec:
+      projectID: my-gcp-project
+
+generatorStates:
+  my-state:
+    spec:
+      generatorRef:
+        apiVersion: generators.external-secrets.io/v1alpha1
+        kind: Password
+        name: my-password
+
+githubAccessTokens:
+  my-github:
+    spec:
+      appID: 12345
+      installID: 67890
+
+grafanas:
+  my-grafana:
+    spec:
+      url: https://grafana.example.com
+
+mfas:
+  my-mfa:
+    spec:
+      secretRef:
+        name: totp-secret
+        key: totp-seed
+
+passwords:
+  my-password:
+    spec:
+      length: 32
+
+quayAccessTokens:
+  my-quay:
+    spec:
+      robotAccountRef:
+        name: quay-robot
+        key: token
+
+sshKeys:
+  my-ssh:
+    spec:
+      keySize: 4096
+      keyType: rsa
+
+stsSessionTokens:
+  my-sts:
+    spec:
+      region: us-east-1
+
+uuids:
+  my-uuid:
+    spec: {}
+
+vaultDynamicSecrets:
+  my-vault-dyn:
+    spec:
+      path: pki/issue/my-role
+      method: POST
+
+webhooks:
+  my-webhook:
+    spec:
+      url: https://provider.example.com/generate
+      method: GET

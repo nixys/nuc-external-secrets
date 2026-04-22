@@ -50,6 +50,57 @@
         },
         "clusterPushSecret": {
           "$ref": "#/definitions/nonEmptyString"
+        },
+        "acrAccessToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "cloudsmithAccessToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "clusterGenerator": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "ecrAuthorizationToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "fake": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "gcrAccessToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "generatorState": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "githubAccessToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "grafana": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "mfa": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "password": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "quayAccessToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "sshKey": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "stsSessionToken": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "uuid": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "vaultDynamicSecret": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "webhook": {
+          "$ref": "#/definitions/nonEmptyString"
         }
       }
     },
@@ -73,6 +124,57 @@
           "$ref": "#/definitions/freeFormObject"
         },
         "clusterPushSecret": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "acrAccessToken": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "cloudsmithAccessToken": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "clusterGenerator": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "ecrAuthorizationToken": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "fake": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "gcrAccessToken": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "generatorState": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "githubAccessToken": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "grafana": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "mfa": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "password": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "quayAccessToken": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "sshKey": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "stsSessionToken": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "uuid": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "vaultDynamicSecret": {
+          "$ref": "#/definitions/freeFormObject"
+        },
+        "webhook": {
           "$ref": "#/definitions/freeFormObject"
         }
       }
@@ -100,6 +202,74 @@
     "clusterPushSecrets": {
       "$ref": "#/definitions/clusterResourceMap",
       "description": "ClusterPushSecret resources keyed by resource name."
+    },
+    "acrAccessTokens": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "ACRAccessToken resources keyed by resource name."
+    },
+    "cloudsmithAccessTokens": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "CloudsmithAccessToken resources keyed by resource name."
+    },
+    "clusterGenerators": {
+      "$ref": "#/definitions/clusterResourceMap",
+      "description": "ClusterGenerator resources keyed by resource name."
+    },
+    "ecrAuthorizationTokens": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "ECRAuthorizationToken resources keyed by resource name."
+    },
+    "fakes": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "Fake resources keyed by resource name."
+    },
+    "gcrAccessTokens": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "GCRAccessToken resources keyed by resource name."
+    },
+    "generatorStates": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "GeneratorState resources keyed by resource name."
+    },
+    "githubAccessTokens": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "GithubAccessToken resources keyed by resource name."
+    },
+    "grafanas": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "Grafana resources keyed by resource name."
+    },
+    "mfas": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "MFA resources keyed by resource name."
+    },
+    "passwords": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "Password resources keyed by resource name."
+    },
+    "quayAccessTokens": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "QuayAccessToken resources keyed by resource name."
+    },
+    "sshKeys": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "SSHKey resources keyed by resource name."
+    },
+    "stsSessionTokens": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "STSSessionToken resources keyed by resource name."
+    },
+    "uuids": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "UUID resources keyed by resource name."
+    },
+    "vaultDynamicSecrets": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "VaultDynamicSecret resources keyed by resource name."
+    },
+    "webhooks": {
+      "$ref": "#/definitions/namespacedResourceMap",
+      "description": "Webhook resources keyed by resource name."
     }
   },
   "definitions": {

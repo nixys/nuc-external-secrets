@@ -1,0 +1,7 @@
+{{- range $name := keys ($.Values.clusterGenerators | default dict) | sortAlpha }}
+{{- $item := get $.Values.clusterGenerators $name -}}
+{{- if and (ne $name "__helm_docs_example__") (include "nuc-external-secrets.isActiveItem" $item) }}
+---
+{{ include "nuc-external-secrets.renderClusterResource" (dict "root" $ "name" $name "item" $item "kind" "ClusterGenerator" "apiVersionKey" "clusterGenerator") }}
+{{- end }}
+{{- end }}

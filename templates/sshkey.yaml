@@ -1,0 +1,7 @@
+{{- range $name := keys ($.Values.sshKeys | default dict) | sortAlpha }}
+{{- $item := get $.Values.sshKeys $name -}}
+{{- if and (ne $name "__helm_docs_example__") (include "nuc-external-secrets.isActiveItem" $item) }}
+---
+{{ include "nuc-external-secrets.renderNamespacedResource" (dict "root" $ "name" $name "item" $item "kind" "SSHKey" "apiVersionKey" "sshKey") }}
+{{- end }}
+{{- end }}

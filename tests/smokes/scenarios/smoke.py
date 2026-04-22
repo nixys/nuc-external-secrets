@@ -101,7 +101,7 @@ def check_rendering_contract(context: SmokeContext) -> None:
     )
 
     documents = render.load_documents(output_path)
-    render.assert_doc_count(documents, 7)
+    render.assert_doc_count(documents, 9)
     render.assert_kinds(
         documents,
         {
@@ -111,6 +111,8 @@ def check_rendering_contract(context: SmokeContext) -> None:
             "ClusterSecretStore",
             "PushSecret",
             "ClusterPushSecret",
+            "Password",
+            "ClusterGenerator",
         },
     )
 
@@ -143,6 +145,22 @@ def check_rendering_contract(context: SmokeContext) -> None:
     render.assert_path(push_secret, "metadata.namespace", context.namespace)
     render.assert_path(push_secret, "spec.deletionPolicy", "Delete")
     render.assert_path(push_secret, "spec.secretStoreRefs[0].name", "vault")
+
+    password = render.select_document(
+        documents,
+        kind="Password",
+        name=f"{context.release_name}-app-password",
+    )
+    render.assert_path(password, "metadata.namespace", context.namespace)
+    render.assert_path(password, "spec.length", 32)
+
+    cluster_gen = render.select_document(
+        documents,
+        kind="ClusterGenerator",
+        name=f"{context.release_name}-shared-gen",
+    )
+    render.assert_path_missing(cluster_gen, "metadata.namespace")
+    render.assert_path(cluster_gen, "spec.kind", "Password")
 
 
 def check_example_render(context: SmokeContext) -> None:

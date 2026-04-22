@@ -9,6 +9,23 @@ templates:
   - templates/clustersecretstore.yaml
   - templates/pushsecret.yaml
   - templates/clusterpushsecret.yaml
+  - templates/acraccesstoken.yaml
+  - templates/cloudsmithaccesstoken.yaml
+  - templates/clustergenerator.yaml
+  - templates/ecrauthorizationtoken.yaml
+  - templates/fake.yaml
+  - templates/gcraccesstoken.yaml
+  - templates/generatorstate.yaml
+  - templates/githubaccesstoken.yaml
+  - templates/grafana.yaml
+  - templates/mfa.yaml
+  - templates/password.yaml
+  - templates/quayaccesstoken.yaml
+  - templates/sshkey.yaml
+  - templates/stssessiontoken.yaml
+  - templates/uuid.yaml
+  - templates/vaultdynamicsecret.yaml
+  - templates/webhook.yaml
 
 tests:
   - it: default values.yaml (placeholders only) renders no resources

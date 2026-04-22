@@ -1,0 +1,7 @@
+{{- range $name := keys ($.Values.cloudsmithAccessTokens | default dict) | sortAlpha }}
+{{- $item := get $.Values.cloudsmithAccessTokens $name -}}
+{{- if and (ne $name "__helm_docs_example__") (include "nuc-external-secrets.isActiveItem" $item) }}
+---
+{{ include "nuc-external-secrets.renderNamespacedResource" (dict "root" $ "name" $name "item" $item "kind" "CloudsmithAccessToken" "apiVersionKey" "cloudsmithAccessToken") }}
+{{- end }}
+{{- end }}

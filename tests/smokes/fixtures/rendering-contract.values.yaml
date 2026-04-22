@@ -106,3 +106,18 @@ clusterPushSecrets:
               secretKey: ca.crt
               remoteRef:
                 remoteKey: kv/shared/ca
+
+passwords:
+  app-password:
+    spec:
+      length: 32
+      digits: 8
+      symbols: 4
+      noUpper: false
+
+clusterGenerators:
+  shared-gen:
+    spec:
+      kind: Password
+      generator:
+        apiVersion: generators.external-secrets.io/v1alpha1

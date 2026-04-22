@@ -2,74 +2,161 @@
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/nuc-external-secrets)](https://artifacthub.io/packages/search?repo=nuc-external-secrets)
 
-Helm chart for rendering External Secrets Operator resources and generator CRs from declarative values.
+Helm chart for rendering [External Secrets Operator](https://external-secrets.io/) (ESO) custom resources from declarative values.
 
-The chart does not install External Secrets Operator CRDs or the operator itself. It renders the custom resources defined in [`config/crds/bases`](https://github.com/external-secrets/external-secrets/tree/main/config/crds/bases) and expects those CRDs to be available in the target cluster.
+The chart **does not install ESO or its CRDs**. Install the operator separately (for example, via the official `external-secrets/external-secrets` chart) and use this chart to declaratively manage the operator's CRD instances.
 
 ## Quick Start
 
-Install the chart:
-
 ```bash
-helm install nuc-external-secrets oci://registry.nixys.ru/nuc/nuc-external-secrets   --namespace external-secrets   --create-namespace
-```
-
-Install the local README generator hook:
-
-```bash
-pre-commit install
-pre-commit install-hooks
+helm install nuc-external-secrets oci://registry.nixys.ru/nuc/nuc-external-secrets \
+  --namespace external-secrets \
+  --create-namespace \
+  -f my-values.yaml
 ```
 
 ## Supported Resources
 
-- `ClusterExternalSecret`
-- `ClusterPushSecret`
-- `ClusterSecretStore`
-- `ExternalSecret`
-- `PushSecret`
-- `SecretStore`
-- `ACRAccessToken`
-- `CloudsmithAccessToken`
-- `ClusterGenerator`
-- `ECRAuthorizationToken`
-- `Fake`
-- `GCRAccessToken`
-- `GeneratorState`
-- `GithubAccessToken`
-- `Grafana`
-- `MFA`
-- `Password`
-- `QuayAccessToken`
-- `SSHKey`
-- `STSSessionToken`
-- `UUID`
-- `VaultDynamicSecret`
-- `Webhook`
+### Core resources (`external-secrets.io`)
+
+| Kind | Scope | Values key | Default apiVersion |
+| ---- | ----- | ---------- | ------------------ |
+| `ExternalSecret` | Namespaced | `externalSecrets` | `external-secrets.io/v1` |
+| `ClusterExternalSecret` | Cluster | `clusterExternalSecrets` | `external-secrets.io/v1` |
+| `SecretStore` | Namespaced | `secretStores` | `external-secrets.io/v1` |
+| `ClusterSecretStore` | Cluster | `clusterSecretStores` | `external-secrets.io/v1` |
+| `PushSecret` | Namespaced | `pushSecrets` | `external-secrets.io/v1alpha1` |
+| `ClusterPushSecret` | Cluster | `clusterPushSecrets` | `external-secrets.io/v1alpha1` |
+
+### Generator resources (`generators.external-secrets.io`)
+
+| Kind | Scope | Values key | Default apiVersion |
+| ---- | ----- | ---------- | ------------------ |
+| `ACRAccessToken` | Namespaced | `acrAccessTokens` | `generators.external-secrets.io/v1alpha1` |
+| `CloudsmithAccessToken` | Namespaced | `cloudsmithAccessTokens` | `generators.external-secrets.io/v1alpha1` |
+| `ClusterGenerator` | Cluster | `clusterGenerators` | `generators.external-secrets.io/v1alpha1` |
+| `ECRAuthorizationToken` | Namespaced | `ecrAuthorizationTokens` | `generators.external-secrets.io/v1alpha1` |
+| `Fake` | Namespaced | `fakes` | `generators.external-secrets.io/v1alpha1` |
+| `GCRAccessToken` | Namespaced | `gcrAccessTokens` | `generators.external-secrets.io/v1alpha1` |
+| `GeneratorState` | Namespaced | `generatorStates` | `generators.external-secrets.io/v1alpha1` |
+| `GithubAccessToken` | Namespaced | `githubAccessTokens` | `generators.external-secrets.io/v1alpha1` |
+| `Grafana` | Namespaced | `grafanas` | `generators.external-secrets.io/v1alpha1` |
+| `MFA` | Namespaced | `mfas` | `generators.external-secrets.io/v1alpha1` |
+| `Password` | Namespaced | `passwords` | `generators.external-secrets.io/v1alpha1` |
+| `QuayAccessToken` | Namespaced | `quayAccessTokens` | `generators.external-secrets.io/v1alpha1` |
+| `SSHKey` | Namespaced | `sshKeys` | `generators.external-secrets.io/v1alpha1` |
+| `STSSessionToken` | Namespaced | `stsSessionTokens` | `generators.external-secrets.io/v1alpha1` |
+| `UUID` | Namespaced | `uuids` | `generators.external-secrets.io/v1alpha1` |
+| `VaultDynamicSecret` | Namespaced | `vaultDynamicSecrets` | `generators.external-secrets.io/v1alpha1` |
+| `Webhook` | Namespaced | `webhooks` | `generators.external-secrets.io/v1alpha1` |
 
 ## Values Model
 
-The chart exposes one keyed map per supported resource kind. Each map entry becomes one rendered custom resource where the map key is used as `metadata.name`.
+Every resource kind has:
 
-Every resource map uses the same generic contract:
+- a **dedicated plural map** (see _Values key_ column above) keyed by resource name;
+- an **`apiVersions.<kindCamel>`** default that each entry can override via its `apiVersion` field;
+- a **`generic.<kindCamel>`** block that is merged into each item's `spec` before rendering
+  (per-item `spec` fields always win).
 
-- `namespace` for namespaced resources (ignored for cluster-scoped resources)
-- `labels`
-- `annotations`
-- `apiVersion`
-- `spec`
-- `status`
+Each map entry supports these optional fields:
 
-Global controls:
+| Field | Purpose |
+| ----- | ------- |
+| `namespace` | Target namespace (namespaced kinds only; defaults to release namespace) |
+| `labels` | Extra labels, merged over chart labels and `commonLabels` |
+| `annotations` | Extra annotations, merged over `commonAnnotations` |
+| `apiVersion` | Per-resource apiVersion override |
+| `spec` | Resource spec rendered as-is, merged on top of `generic.<kindCamel>` |
+| `status` | Optional raw status (for fixtures and synthetic manifests) |
+| `enabled` | If `false`, the entry is skipped |
 
-- `nameOverride`
-- `releasePrefix`
-- `commonLabels`
-- `commonAnnotations`
-- `global`
-- `apiVersions.*`
+Setting a map entry to `null` suppresses an inherited lower-precedence default (standard Nixys subchart convention).
+
+Global controls: `nameOverride`, `releasePrefix`, `commonLabels`, `commonAnnotations`, `global`, `apiVersions.*`.
 
 The values contract is validated by [values.schema.json](values.schema.json).
+
+## The `generic:` Block
+
+`generic.<kindCamel>` holds cross-item `spec` defaults merged into every resource of the matching kind via Helm's `mustMergeOverwrite`. Per-item `spec` always wins.
+
+Practical notes:
+
+- Use for scalar and map fields (`refreshInterval`, `secretStoreRef`, `target.*`, `deletionPolicy`, `length`, …).
+- **Arrays are not merged.** `data`, `dataFrom`, `secretStoreRefs`, and similar lists are replaced wholesale by the item's own value; put array fields in the item, not in `generic`.
+
+## Usage
+
+### Standalone
+
+```bash
+helm install my-secrets ./nuc-external-secrets -n apps -f my-values.yaml
+```
+
+### As a subchart of `nxs-universal-chart`
+
+```yaml
+# Chart.yaml
+dependencies:
+  - name: nuc-external-secrets
+    version: ">=1.0.0"
+    repository: oci://registry.nixys.ru/nuc
+    condition: nuc-external-secrets.enabled
+```
+
+```yaml
+# values.yaml
+nuc-external-secrets:
+  enabled: true
+  generic:
+    externalSecret:
+      refreshInterval: 1h
+      secretStoreRef:
+        name: vault
+        kind: ClusterSecretStore
+      target:
+        creationPolicy: Owner
+  externalSecrets:
+    my-app-secrets:
+      spec:
+        data:
+          - secretKey: DB_PASS
+            remoteRef:
+              key: kv/prod/my-app
+              property: password
+```
+
+### Generator example
+
+Generate a random password and reference it from an ExternalSecret:
+
+```yaml
+passwords:
+  app-password:
+    spec:
+      length: 32
+      digits: 8
+      symbols: 4
+      symbolCharacters: "-_$@"
+      noUpper: false
+
+externalSecrets:
+  app-secrets:
+    spec:
+      refreshInterval: 1h
+      sourceRef:
+        generatorRef:
+          apiVersion: generators.external-secrets.io/v1alpha1
+          kind: Password
+          name: <release-name>-app-password
+      target:
+        creationPolicy: Owner
+```
+
+## Resource Names
+
+Every rendered resource gets `metadata.name = <releaseName>-<mapKey>` by default. To decouple names from the release name, set `releasePrefix` — then `metadata.name = <releasePrefix>-<mapKey>`.
 
 ## Helm Values
 
@@ -80,15 +167,13 @@ This section is generated from [values.yaml](values.yaml) by `helm-docs`. Edit [
 ## Included Values Files
 
 - [values.yaml](values.yaml): minimal defaults that render no resources.
-- [values.yaml.example](values.yaml.example): example values covering every supported resource kind.
+- [values.yaml.example](values.yaml.example): example values covering the core resource kinds.
 
 ## Testing
 
-Representative local commands:
-
 ```bash
 helm lint . -f values.yaml.example
-helm template {chart_name} . -f values.yaml.example
+helm template my-release . -f values.yaml.example
 helm unittest -f 'tests/units/*_test.yaml' .
 sh tests/units/backward_compatibility_test.sh
 python3 tests/smokes/run/smoke.py

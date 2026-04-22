@@ -34,3 +34,38 @@ externalSecrets:
         - secretKey: password
           remoteRef:
             key: password
+
+fakes:
+  static-data:
+    spec:
+      data:
+        - key: color
+          value: blue
+        - key: size
+          value: large
+
+passwords:
+  app-password:
+    spec:
+      length: 32
+      digits: 8
+      symbols: 4
+      symbolCharacters: "-_$@"
+      noUpper: false
+
+uuids:
+  request-id:
+    spec: {}
+
+clusterGenerators:
+  shared-password:
+    spec:
+      kind: Password
+      generator:
+        apiVersion: generators.external-secrets.io/v1alpha1
+        kind: Password
+        spec:
+          length: 24
+          digits: 4
+          symbols: 2
+          noUpper: false
