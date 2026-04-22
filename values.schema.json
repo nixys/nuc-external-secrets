@@ -330,6 +330,9 @@
         "enabled": {
           "type": "boolean"
         },
+        "namespace": {
+          "type": "string"
+        },
         "labels": {
           "$ref": "#/definitions/stringMap"
         },
