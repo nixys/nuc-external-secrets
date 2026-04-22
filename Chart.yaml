@@ -3,7 +3,7 @@ apiVersion: v2
 name: nuc-external-secrets
 description: Helm chart for External Secrets Operator custom resources
 type: application
-version: 1.0.0
+version: 1.0.1
 appVersion: "0.20.4"
 icon: https://registry.nixys.ru/logo.png
 home: https://git.nixys.ru/apps/nuc-subcharts/nuc-external-secrets
