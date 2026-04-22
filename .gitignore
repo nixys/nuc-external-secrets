@@ -1,0 +1,14 @@
+.idea/
+.vscode/
+tmp/
+private/
+values-test.yaml
+__pycache__/
+*.pyc
+build/
+.bin/
+.cache/
+.helm/
+.rendered/
+.codex
+charts/
