@@ -146,7 +146,7 @@ tests/e2e/
 `tests/e2e/test-e2e.sh` performs the following steps:
 
 1. Starts a disposable kind cluster from `tests/e2e/kind.yaml`.
-2. Creates the fixed namespace `nxs-universal-chart-e2e`.
+2. Creates the fixed namespace `nuc-external-secrets-e2e`.
 3. Runs `helm upgrade --install` against the chart root with `tests/e2e/values/install.values.yaml`.
 4. Verifies the installed Deployment, StatefulSet, Service, Ingress, HPA, PDB, NetworkPolicy, ConfigMap, Secret, hook Job, standard Job, and CronJob.
 5. Cleans up the kind cluster on exit.

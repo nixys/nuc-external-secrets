@@ -1,0 +1,129 @@
+enabled: true
+
+# -- Override the generated base name if needed.
+nameOverride: ""
+
+# -- Optional release prefix used for generated names.
+releasePrefix: ""
+
+# -- Extra labels applied to every rendered resource.
+commonLabels: {}
+# -- Extra annotations applied to every rendered resource in addition to Helm hook annotations.
+commonAnnotations: {}
+
+# -- Arbitrary global values available to tpl-rendered strings.
+global: {}
+
+# -- Default apiVersions for rendered resources.
+# Core resources (ExternalSecret, ClusterExternalSecret, SecretStore, ClusterSecretStore) were
+# promoted to external-secrets.io/v1 in ESO 0.10 and remain stable in 2.x. PushSecret and
+# ClusterPushSecret are still served only at v1alpha1 as of ESO 2.3.
+apiVersions:
+  # -- Default apiVersion for ExternalSecret resources.
+  externalSecret: external-secrets.io/v1
+  # -- Default apiVersion for ClusterExternalSecret resources.
+  clusterExternalSecret: external-secrets.io/v1
+  # -- Default apiVersion for SecretStore resources.
+  secretStore: external-secrets.io/v1
+  # -- Default apiVersion for ClusterSecretStore resources.
+  clusterSecretStore: external-secrets.io/v1
+  # -- Default apiVersion for PushSecret resources.
+  pushSecret: external-secrets.io/v1alpha1
+  # -- Default apiVersion for ClusterPushSecret resources.
+  clusterPushSecret: external-secrets.io/v1alpha1
+
+# Cross-item spec defaults, merged under each resource `spec` via `mustMergeOverwrite`
+# (per-item spec wins). Arrays are replaced wholesale, not merged — put list fields
+# (data, dataFrom, secretStoreRefs) in the item, not in `generic`.
+generic:
+  # -- Default spec fragment merged into every ExternalSecret.
+  externalSecret: {}
+  # -- Default spec fragment merged into every ClusterExternalSecret.
+  clusterExternalSecret: {}
+  # -- Default spec fragment merged into every SecretStore.
+  secretStore: {}
+  # -- Default spec fragment merged into every ClusterSecretStore.
+  clusterSecretStore: {}
+  # -- Default spec fragment merged into every PushSecret.
+  pushSecret: {}
+  # -- Default spec fragment merged into every ClusterPushSecret.
+  clusterPushSecret: {}
+
+# Each resource map entry supports:
+# - the top-level map key becomes metadata.name (combined with releasePrefix or release name)
+# - namespace: optional for namespaced resources, defaults to the release namespace
+# - labels: optional, merged over chart labels and commonLabels
+# - annotations: optional, merged over hookAnnotations and commonAnnotations
+# - apiVersion: optional override for a single resource
+# - spec: arbitrary resource spec; merged on top of generic.<kindCamel>
+# - status: optional raw status block for fixtures and synthetic manifests
+# - set an entry to null in a higher-precedence values file to suppress a lower-precedence default resource
+
+# -- Generic ExternalSecret resources keyed by resource name.
+# @default -- {}
+externalSecrets:
+  __helm_docs_example__:
+    # -- Namespace for the ExternalSecret resource. Defaults to the Helm release namespace.
+    namespace: documentation-placeholder
+    # -- Resource-specific labels.
+    labels: {}
+    # -- Resource-specific annotations.
+    annotations: {}
+    # -- Per-resource apiVersion override.
+    apiVersion: external-secrets.io/v1
+    # -- Resource spec rendered as-is and merged on top of `generic.externalSecret`.
+    spec: {}
+    # -- Optional resource status rendered as-is.
+    status: {}
+
+# -- Generic ClusterExternalSecret resources keyed by resource name.
+# @default -- {}
+clusterExternalSecrets:
+  __helm_docs_example__:
+    labels: {}
+    annotations: {}
+    apiVersion: external-secrets.io/v1
+    spec: {}
+    status: {}
+
+# -- Generic SecretStore resources keyed by resource name.
+# @default -- {}
+secretStores:
+  __helm_docs_example__:
+    namespace: documentation-placeholder
+    labels: {}
+    annotations: {}
+    apiVersion: external-secrets.io/v1
+    spec: {}
+    status: {}
+
+# -- Generic ClusterSecretStore resources keyed by resource name.
+# @default -- {}
+clusterSecretStores:
+  __helm_docs_example__:
+    labels: {}
+    annotations: {}
+    apiVersion: external-secrets.io/v1
+    spec: {}
+    status: {}
+
+# -- Generic PushSecret resources keyed by resource name.
+# @default -- {}
+pushSecrets:
+  __helm_docs_example__:
+    namespace: documentation-placeholder
+    labels: {}
+    annotations: {}
+    apiVersion: external-secrets.io/v1alpha1
+    spec: {}
+    status: {}
+
+# -- Generic ClusterPushSecret resources keyed by resource name.
+# @default -- {}
+clusterPushSecrets:
+  __helm_docs_example__:
+    labels: {}
+    annotations: {}
+    apiVersion: external-secrets.io/v1alpha1
+    spec: {}
+    status: {}

@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "nuc-external-secrets values",
+  "description": "Schema for nuc-external-secrets Helm chart values.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Enable rendering for this subchart."
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "Override the generated base name."
+    },
+    "releasePrefix": {
+      "type": "string",
+      "description": "Optional prefix used for generated names."
+    },
+    "commonLabels": {
+      "$ref": "#/definitions/stringMap",
+      "description": "Labels merged into every rendered resource."
+    },
+    "commonAnnotations": {
+      "$ref": "#/definitions/stringMap",
+      "description": "Annotations merged into every rendered resource."
+    },
+    "global": {
+      "$ref": "#/definitions/freeFormObject",
+      "description": "Global values available to tpl-rendered strings."
+    },
+    "apiVersions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "externalSecret": { "$ref": "#/definitions/nonEmptyString" },
+        "clusterExternalSecret": { "$ref": "#/definitions/nonEmptyString" },
+        "secretStore": { "$ref": "#/definitions/nonEmptyString" },
+        "clusterSecretStore": { "$ref": "#/definitions/nonEmptyString" },
+        "pushSecret": { "$ref": "#/definitions/nonEmptyString" },
+        "clusterPushSecret": { "$ref": "#/definitions/nonEmptyString" }
+      }
+    },
+    "generic": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "externalSecret": { "$ref": "#/definitions/freeFormObject" },
+        "clusterExternalSecret": { "$ref": "#/definitions/freeFormObject" },
+        "secretStore": { "$ref": "#/definitions/freeFormObject" },
+        "clusterSecretStore": { "$ref": "#/definitions/freeFormObject" },
+        "pushSecret": { "$ref": "#/definitions/freeFormObject" },
+        "clusterPushSecret": { "$ref": "#/definitions/freeFormObject" }
+      }
+    },
+    "externalSecrets": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ExternalSecret resources keyed by resource name."
+    },
+    "clusterExternalSecrets": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ClusterExternalSecret resources keyed by resource name."
+    },
+    "secretStores": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of SecretStore resources keyed by resource name."
+    },
+    "clusterSecretStores": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ClusterSecretStore resources keyed by resource name."
+    },
+    "pushSecrets": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of PushSecret resources keyed by resource name."
+    },
+    "clusterPushSecrets": {
+      "$ref": "#/definitions/resourceMap",
+      "description": "Map of ClusterPushSecret resources keyed by resource name."
+    }
+  },
+  "definitions": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringMap": {
+      "type": "object",
+      "default": {},
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "freeFormObject": {
+      "type": "object",
+      "default": {},
+      "additionalProperties": true
+    },
+    "resourceItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "namespace": { "$ref": "#/definitions/nonEmptyString" },
+        "labels": { "$ref": "#/definitions/stringMap" },
+        "annotations": { "$ref": "#/definitions/stringMap" },
+        "apiVersion": { "$ref": "#/definitions/nonEmptyString" },
+        "spec": { "$ref": "#/definitions/freeFormObject" },
+        "status": { "$ref": "#/definitions/freeFormObject" }
+      }
+    },
+    "nullableResourceItem": {
+      "oneOf": [
+        { "$ref": "#/definitions/resourceItem" },
+        { "type": "null" }
+      ]
+    },
+    "resourceMap": {
+      "type": "object",
+      "default": {},
+      "propertyNames": {
+        "$ref": "#/definitions/nonEmptyString"
+      },
+      "additionalProperties": {
+        "$ref": "#/definitions/nullableResourceItem"
+      }
+    }
+  }
+}

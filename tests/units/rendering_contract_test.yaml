@@ -1,0 +1,176 @@
+suite: rendering contract
+templates:
+  - templates/externalsecret.yaml
+  - templates/clusterexternalsecret.yaml
+  - templates/secretstore.yaml
+  - templates/clustersecretstore.yaml
+  - templates/pushsecret.yaml
+  - templates/clusterpushsecret.yaml
+release:
+  name: unit-test
+  namespace: unit-namespace
+
+tests:
+  - it: renders no ExternalSecret documents by default
+    template: templates/externalsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders no ClusterExternalSecret documents by default
+    template: templates/clusterexternalsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders no SecretStore documents by default
+    template: templates/secretstore.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders no ClusterSecretStore documents by default
+    template: templates/clustersecretstore.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders no PushSecret documents by default
+    template: templates/pushsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: renders no ClusterPushSecret documents by default
+    template: templates/clusterpushsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: ExternalSecret inherits generic defaults and chart labels
+    values:
+      - values/rendering_contract.values.yaml
+    template: templates/externalsecret.yaml
+    documentSelector:
+      path: metadata.name
+      value: merged-external-secret
+    asserts:
+      - isKind:
+          of: ExternalSecret
+      - equal:
+          path: apiVersion
+          value: external-secrets.io/v1
+      - equal:
+          path: metadata.namespace
+          value: unit-namespace
+      - equal:
+          path: metadata.labels["app.kubernetes.io/name"]
+          value: external-secrets-platform
+      - equal:
+          path: metadata.labels.platform
+          value: eso
+      - equal:
+          path: metadata.labels.component
+          value: secret
+      - equal:
+          path: metadata.annotations.team
+          value: platform
+      - equal:
+          path: metadata.annotations.note
+          value: merged-secret
+      - equal:
+          path: spec.refreshInterval
+          value: 1h
+      - equal:
+          path: spec.secretStoreRef.name
+          value: vault
+      - equal:
+          path: spec.secretStoreRef.kind
+          value: ClusterSecretStore
+      - equal:
+          path: spec.target.creationPolicy
+          value: Owner
+      - equal:
+          path: spec.data[0].secretKey
+          value: DB_PASS
+
+  - it: per-item spec field overrides generic default
+    values:
+      - values/rendering_contract.values.yaml
+    template: templates/externalsecret.yaml
+    documentSelector:
+      path: metadata.name
+      value: overriding-refresh
+    asserts:
+      - equal:
+          path: spec.refreshInterval
+          value: 15m
+      - equal:
+          path: spec.secretStoreRef.name
+          value: vault
+      - equal:
+          path: spec.dataFrom[0].extract.key
+          value: kv/prod/app-config
+
+  - it: ClusterExternalSecret renders without namespace
+    values:
+      - values/rendering_contract.values.yaml
+    template: templates/clusterexternalsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: ClusterExternalSecret
+      - notExists:
+          path: metadata.namespace
+
+  - it: SecretStore honors per-item namespace
+    values:
+      - values/rendering_contract.values.yaml
+    template: templates/secretstore.yaml
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.namespace
+          value: stores
+
+  - it: ClusterSecretStore renders without namespace
+    values:
+      - values/rendering_contract.values.yaml
+    template: templates/clustersecretstore.yaml
+    asserts:
+      - hasDocuments:
+          count: 1
+      - notExists:
+          path: metadata.namespace
+
+  - it: PushSecret uses v1alpha1 and inherits generic defaults
+    values:
+      - values/rendering_contract.values.yaml
+    template: templates/pushsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: apiVersion
+          value: external-secrets.io/v1alpha1
+      - equal:
+          path: spec.deletionPolicy
+          value: Delete
+      - equal:
+          path: spec.secretStoreRefs[0].name
+          value: vault
+
+  - it: ClusterPushSecret uses v1alpha1 without namespace
+    values:
+      - values/rendering_contract.values.yaml
+    template: templates/clusterpushsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: apiVersion
+          value: external-secrets.io/v1alpha1
+      - notExists:
+          path: metadata.namespace
