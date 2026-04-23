@@ -1,0 +1,139 @@
+nameOverride: external-secrets-platform
+
+commonLabels:
+  platform: eso
+  tier: common
+
+commonAnnotations:
+  team: platform
+  note: common
+
+apiVersions:
+  externalSecret: external-secrets.io/v1
+  clusterExternalSecret: external-secrets.io/v1
+  secretStore: external-secrets.io/v1
+  clusterSecretStore: external-secrets.io/v1
+  pushSecret: external-secrets.io/v1alpha1
+  clusterPushSecret: external-secrets.io/v1alpha1
+
+generic:
+  externalSecret:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: vault
+      kind: ClusterSecretStore
+    target:
+      creationPolicy: Owner
+  pushSecret:
+    deletionPolicy: Delete
+    refreshInterval: 1h
+    secretStoreRefs:
+      - name: vault
+        kind: ClusterSecretStore
+
+externalSecrets:
+  merged-external-secret:
+    labels:
+      component: secret
+    annotations:
+      note: merged-secret
+    spec:
+      data:
+        - secretKey: DB_PASS
+          remoteRef:
+            key: kv/prod/app
+            property: password
+
+clusterExternalSecrets:
+  merged-cluster-external-secret:
+    labels:
+      component: ces
+    annotations:
+      note: merged-cluster-external-secret
+    spec:
+      externalSecretName: broadcast
+      namespaceSelectors:
+        - matchLabels:
+            pull-secrets: "true"
+      externalSecretSpec:
+        secretStoreRef:
+          name: vault
+          kind: ClusterSecretStore
+        target:
+          name: broadcast
+        data:
+          - secretKey: payload
+            remoteRef:
+              key: kv/shared/broadcast
+              property: payload
+
+secretStores:
+  merged-secret-store:
+    namespace: stores
+    labels:
+      component: store
+    annotations:
+      note: merged-secret-store
+    spec:
+      provider:
+        vault:
+          server: https://vault.example.com
+          path: secret
+          version: v2
+          auth:
+            kubernetes:
+              mountPath: kubernetes
+              role: team-a
+
+clusterSecretStores:
+  merged-cluster-secret-store:
+    labels:
+      component: cluster-store
+    annotations:
+      note: merged-cluster-secret-store
+    spec:
+      provider:
+        vault:
+          server: https://vault.example.com
+          path: secret
+          version: v2
+          auth:
+            kubernetes:
+              mountPath: kubernetes
+              role: eso-default
+
+pushSecrets:
+  merged-push-secret:
+    labels:
+      component: push
+    annotations:
+      note: merged-push-secret
+    spec:
+      selector:
+        secret:
+          name: local-creds
+      data:
+        - match:
+            secretKey: password
+            remoteRef:
+              remoteKey: kv/pushed/creds
+
+clusterPushSecrets:
+  merged-cluster-push-secret:
+    labels:
+      component: cluster-push
+    annotations:
+      note: merged-cluster-push-secret
+    spec:
+      pushSecretSpec:
+        secretStoreRefs:
+          - name: vault
+            kind: ClusterSecretStore
+        selector:
+          secret:
+            name: ca-cert
+        data:
+          - match:
+              secretKey: ca.crt
+              remoteRef:
+                remoteKey: kv/shared/ca

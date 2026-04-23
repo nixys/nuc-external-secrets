@@ -1,0 +1,35 @@
+commonLabels:
+  test-suite: e2e
+
+commonAnnotations:
+  test-suite: e2e
+
+generic:
+  externalSecret:
+    refreshInterval: 10s
+    secretStoreRef:
+      name: e2e-fake-store
+      kind: SecretStore
+    target:
+      creationPolicy: Owner
+
+secretStores:
+  e2e-fake-store:
+    spec:
+      provider:
+        fake:
+          data:
+            - key: kv/e2e/app
+              value: hunter2
+              version: v1
+
+externalSecrets:
+  e2e-app:
+    spec:
+      target:
+        name: e2e-app
+      data:
+        - secretKey: PASSWORD
+          remoteRef:
+            key: kv/e2e/app
+            version: v1

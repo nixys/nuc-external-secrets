@@ -53,7 +53,7 @@ git diff --check
 make deps
 helm lint . -f values.yaml.example
 make deps
-helm template smoke-test . -f values.yaml.example >/tmp/nxs-universal-chart.yaml
+helm template smoke-test . -f values.yaml.example >/tmp/nuc-external-secrets.yaml
 make deps
 helm unittest --with-subchart=false -f 'tests/units/*_test.yaml' .
 python3 tests/smokes/run/smoke.py --scenario default-empty --scenario rendering-contract --scenario example-render

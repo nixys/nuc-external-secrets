@@ -1,0 +1,162 @@
+# Example values for all supported External Secrets Operator resources in this chart.
+# Render with:
+#   helm template nuc-external-secrets . -f values.yaml.example
+
+enabled: true
+
+nameOverride: external-secrets
+
+commonLabels:
+  platform: eso
+commonAnnotations:
+  team: platform
+
+apiVersions:
+  externalSecret: external-secrets.io/v1
+  clusterExternalSecret: external-secrets.io/v1
+  secretStore: external-secrets.io/v1
+  clusterSecretStore: external-secrets.io/v1
+  pushSecret: external-secrets.io/v1alpha1
+  clusterPushSecret: external-secrets.io/v1alpha1
+
+generic:
+  externalSecret:
+    refreshInterval: 1h
+    secretStoreRef:
+      name: vault
+      kind: ClusterSecretStore
+    target:
+      creationPolicy: Owner
+      deletionPolicy: Retain
+  pushSecret:
+    deletionPolicy: Delete
+    refreshInterval: 1h
+    secretStoreRefs:
+      - name: vault
+        kind: ClusterSecretStore
+
+externalSecrets:
+  app-one-secrets:
+    namespace: apps
+    labels:
+      component: app-one
+    spec:
+      data:
+        - secretKey: DB_PASS
+          remoteRef:
+            key: kv/prod/app-one
+            property: password
+        - secretKey: API_TOKEN
+          remoteRef:
+            key: kv/prod/app-one
+            property: token
+
+  app-two-secrets:
+    namespace: apps
+    labels:
+      component: app-two
+    spec:
+      refreshInterval: 30m
+      dataFrom:
+        - extract:
+            key: kv/prod/app-two
+
+  tls-material:
+    namespace: apps
+    spec:
+      target:
+        name: app-one-tls
+        template:
+          type: kubernetes.io/tls
+          engineVersion: v2
+          data:
+            tls.crt: "{{ .crt }}"
+            tls.key: "{{ .key }}"
+      data:
+        - secretKey: crt
+          remoteRef:
+            key: kv/prod/app-one-tls
+            property: crt
+        - secretKey: key
+          remoteRef:
+            key: kv/prod/app-one-tls
+            property: key
+
+clusterExternalSecrets:
+  broadcast-registry-pull:
+    labels:
+      component: registry-pull
+    spec:
+      externalSecretName: registry-pull
+      namespaceSelectors:
+        - matchLabels:
+            pull-secrets: "true"
+      externalSecretSpec:
+        secretStoreRef:
+          name: vault
+          kind: ClusterSecretStore
+        target:
+          name: registry-pull
+          template:
+            type: kubernetes.io/dockerconfigjson
+        data:
+          - secretKey: .dockerconfigjson
+            remoteRef:
+              key: kv/global/registry
+              property: dockerconfigjson
+
+secretStores:
+  team-a:
+    namespace: apps
+    spec:
+      provider:
+        vault:
+          server: https://vault.example.com
+          path: secret
+          version: v2
+          auth:
+            kubernetes:
+              mountPath: kubernetes
+              role: team-a
+
+clusterSecretStores:
+  vault:
+    spec:
+      provider:
+        vault:
+          server: https://vault.example.com
+          path: secret
+          version: v2
+          auth:
+            kubernetes:
+              mountPath: kubernetes
+              role: eso-default
+
+pushSecrets:
+  sync-generated-creds:
+    namespace: apps
+    spec:
+      selector:
+        secret:
+          name: local-generated
+      data:
+        - match:
+            secretKey: password
+            remoteRef:
+              remoteKey: kv/pushed/creds/password
+
+clusterPushSecrets:
+  broadcast-ca:
+    spec:
+      pushSecretSpec:
+        secretStoreRefs:
+          - name: vault
+            kind: ClusterSecretStore
+        selector:
+          secret:
+            name: ca-cert
+        data:
+          - match:
+              secretKey: ca.crt
+              remoteRef:
+                remoteKey: kv/shared/ca

@@ -1,0 +1,97 @@
+suite: example resources
+templates:
+  - templates/externalsecret.yaml
+  - templates/clusterexternalsecret.yaml
+  - templates/secretstore.yaml
+  - templates/clustersecretstore.yaml
+  - templates/pushsecret.yaml
+  - templates/clusterpushsecret.yaml
+release:
+  name: unit-test
+  namespace: unit-namespace
+
+tests:
+  - it: renders the expected document count per template
+    values:
+      - ../../values.yaml.example
+    asserts:
+      - hasDocuments:
+          count: 3
+        template: templates/externalsecret.yaml
+      - hasDocuments:
+          count: 1
+        template: templates/clusterexternalsecret.yaml
+      - hasDocuments:
+          count: 1
+        template: templates/secretstore.yaml
+      - hasDocuments:
+          count: 1
+        template: templates/clustersecretstore.yaml
+      - hasDocuments:
+          count: 1
+        template: templates/pushsecret.yaml
+      - hasDocuments:
+          count: 1
+        template: templates/clusterpushsecret.yaml
+
+  - it: example ExternalSecret app-one-secrets renders with inherited defaults
+    values:
+      - ../../values.yaml.example
+    template: templates/externalsecret.yaml
+    documentSelector:
+      path: metadata.name
+      value: app-one-secrets
+    asserts:
+      - isKind:
+          of: ExternalSecret
+      - equal:
+          path: metadata.namespace
+          value: apps
+      - equal:
+          path: spec.refreshInterval
+          value: 1h
+      - equal:
+          path: spec.secretStoreRef.name
+          value: vault
+      - equal:
+          path: spec.data[0].secretKey
+          value: DB_PASS
+
+  - it: example PushSecret renders with v1alpha1 and generic defaults
+    values:
+      - ../../values.yaml.example
+    template: templates/pushsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: apiVersion
+          value: external-secrets.io/v1alpha1
+      - equal:
+          path: spec.deletionPolicy
+          value: Delete
+
+  - it: suppressing a default item via null removes it from the render
+    set:
+      externalSecrets:
+        app-one-secrets: null
+        app-two-secrets: null
+        tls-material: null
+    values:
+      - ../../values.yaml.example
+    template: templates/externalsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: items with enabled false are skipped
+    set:
+      externalSecrets:
+        app-one-secrets:
+          enabled: false
+    values:
+      - ../../values.yaml.example
+    template: templates/externalsecret.yaml
+    asserts:
+      - hasDocuments:
+          count: 2

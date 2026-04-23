@@ -1,6 +1,6 @@
 # Development Dependencies
 
-This document describes the local tools needed to develop, document, and test the `nxs-universal-chart` Helm chart.
+This document describes the local tools needed to develop, document, and test the `nuc-external-secrets` Helm chart.
 
 The repository is designed around a small set of entry points:
 
@@ -11,25 +11,11 @@ The repository is designed around a small set of entry points:
 - `make test-smoke`
 - `make test-e2e`
 
-## Chart Dependency
+## Chart Dependencies
 
-The root chart declares the published helper dependency:
+The chart has no sub-chart dependencies. Helper templates are defined locally in `templates/_helpers.tpl`.
 
-```yaml
-dependencies:
-  - name: nuc-common
-    version: 1.0.0
-    repository: oci://registry.nixys.ru/nuc
-```
-
-Resolve dependencies before direct Helm commands:
-
-```bash
-helm registry login registry.nixys.ru
-make deps
-```
-
-`Chart.lock` should stay in sync with `Chart.yaml`, and shared helper changes must be synchronized with the upstream source in `/home/ruk/nixys/nuc-common`.
+`make deps` is still safe to run — it calls `helm dependency update` which is a no-op when `Chart.yaml` declares no dependencies.
 
 ## Dependency Matrix
 
