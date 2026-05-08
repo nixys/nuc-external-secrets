@@ -84,7 +84,8 @@ The values contract is validated by [values.schema.json](values.schema.json).
 Practical notes:
 
 - Use for scalar and map fields (`refreshInterval`, `secretStoreRef`, `target.*`, `deletionPolicy`, `length`, …).
-- **Arrays are not merged.** `data`, `dataFrom`, `secretStoreRefs`, and similar lists are replaced wholesale by the item's own value; put array fields in the item, not in `generic`.
+- **Single-element generic arrays are spread as per-element defaults.** When `generic.<kindCamel>.<arrayKey>` holds exactly one element and the item also defines the same array key, that element is used as a defaults template merged into every element of the item array. This is intended for fields the API server defaults via admission webhook (e.g. `spec.dataFrom[].extract.conversionStrategy`, `decodingStrategy`, `metadataPolicy`) so rendered manifests match server state and tools like ArgoCD don't see drift.
+- **Generic arrays with multiple elements, or generic arrays with no item override, pass through unchanged** (Helm's standard `mustMergeOverwrite` semantics).
 
 ## Usage
 

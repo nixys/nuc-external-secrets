@@ -3,7 +3,7 @@ apiVersion: v2
 name: nuc-external-secrets
 description: Helm chart for External Secrets Operator custom resources
 type: application
-version: 1.0.1
+version: 1.1.0
 appVersion: "0.20.4"
 icon: https://registry.nixys.ru/logo.png
 home: https://git.nixys.ru/apps/nuc-subcharts/nuc-external-secrets
@@ -33,7 +33,7 @@ annotations:
       url: https://github.com/external-secrets/external-secrets/tree/main/config/crds/bases
   artifacthub.io/changes: |
     - kind: added
-      description: "Initial chart for External Secrets Operator resources and generators"
+      description: "Spread single-element generic arrays as per-element defaults to eliminate ArgoCD drift on ESO admission-webhook defaults"
   artifacthub.io/recommendations: |
     - url: https://nixys.io
     - url: https://github.com/nixys/nuc-external-secrets

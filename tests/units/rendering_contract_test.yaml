@@ -78,6 +78,27 @@ tests:
           path: spec.dataFrom[0].extract.key
           value: kv/prod/app-two
       - equal:
+          path: spec.dataFrom[0].extract.conversionStrategy
+          value: Default
+      - equal:
+          path: spec.dataFrom[0].extract.decodingStrategy
+          value: None
+      - equal:
+          path: spec.dataFrom[0].extract.metadataPolicy
+          value: None
+      - equal:
+          path: spec.dataFrom[1].extract.key
+          value: kv/prod/app-two-secondary
+      - equal:
+          path: spec.dataFrom[1].extract.conversionStrategy
+          value: Unicode
+      - equal:
+          path: spec.dataFrom[1].extract.decodingStrategy
+          value: None
+      - equal:
+          path: spec.dataFrom[1].extract.metadataPolicy
+          value: None
+      - equal:
           path: metadata.labels.tier
           value: backend
       - equal:

@@ -92,7 +92,15 @@ Item annotations win. Call with (dict "root" $root "item" <item>).
 
 {{/*
 Effective spec for a resource: generic.<kind> merged under item.spec (item wins).
-Arrays are replaced by item, not merged — per Helm mustMergeOverwrite semantics.
+Scalars and maps merge recursively via mustMergeOverwrite. For arrays, Helm
+replaces wholesale — but we post-process: when both generic and item provide
+the same array key and generic supplies exactly one element, that generic
+element is used as a defaults template and merged into every element of the
+item array. This lets users put admission-webhook defaults like
+spec.dataFrom[].extract.conversionStrategy into generic and have them
+rendered into each item's spec, eliminating drift against server state.
+When the item omits the array, the generic value passes through unchanged
+(backwards-compatible).
 Call with (dict "root" $root "item" <item> "kind" "<kindCamelCase>").
 */}}
 {{- define "nuc-external-secrets.mergedSpec" -}}
@@ -104,7 +112,24 @@ Call with (dict "root" $root "item" <item> "kind" "<kindCamelCase>").
 {{- $generic = deepCopy (index $root.Values.generic $kind) -}}
 {{- end -}}
 {{- $itemSpec := deepCopy ($item.spec | default dict) -}}
-{{- $merged := mustMergeOverwrite $generic $itemSpec -}}
+{{- $merged := mustMergeOverwrite (deepCopy $generic) (deepCopy $itemSpec) -}}
+{{- range $key, $genericValue := $generic -}}
+{{- if and (kindIs "slice" $genericValue) (eq (len $genericValue) 1) (hasKey $itemSpec $key) -}}
+{{- $itemArr := index $itemSpec $key -}}
+{{- if kindIs "slice" $itemArr -}}
+{{- $defaults := index $genericValue 0 -}}
+{{- $newArr := list -}}
+{{- range $elem := $itemArr -}}
+{{- if and (kindIs "map" $elem) (kindIs "map" $defaults) -}}
+{{- $newArr = append $newArr (mustMergeOverwrite (deepCopy $defaults) (deepCopy $elem)) -}}
+{{- else -}}
+{{- $newArr = append $newArr $elem -}}
+{{- end -}}
+{{- end -}}
+{{- $_ := set $merged $key $newArr -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
 {{- toYaml $merged -}}
 {{- end -}}
 
