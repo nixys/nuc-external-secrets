@@ -12,6 +12,11 @@ generic:
       kind: ClusterSecretStore
     target:
       creationPolicy: Owner
+    dataFrom:
+      - extract:
+          conversionStrategy: Default
+          decodingStrategy: None
+          metadataPolicy: None
   pushSecret:
     deletionPolicy: Delete
     refreshInterval: 1h
@@ -38,6 +43,9 @@ externalSecrets:
       dataFrom:
         - extract:
             key: kv/prod/app-two
+        - extract:
+            key: kv/prod/app-two-secondary
+            conversionStrategy: Unicode
 
 clusterExternalSecrets:
   broadcast:
